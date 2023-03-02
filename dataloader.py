@@ -14,8 +14,14 @@ def filereader(plate, type):
         type = 'Static'
 
         platenameformat = plate.replace(" ","_")
-        dirpath = r'DATA\Files\Plate {plate}\{type}'
-        allfiles = [f for f in os.listdir(dirpath) if isfile(dirpath, f))]
+        dirpath = os.path.join('DATA','Files',f'Plate {plate}',f'{type}')
+        print(dirpath)
+        dirpath = dirpath.replace(r"\\",r'\a'.replace('a',''))
+        print(dirpath)
+        input()
+        allfiles = [f for f in os.listdir(dirpath)]
+        print(allfiles)
+        input()
         for f in allfiles:
             read.append(pd.read_csv(f))
 
