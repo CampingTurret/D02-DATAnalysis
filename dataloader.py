@@ -1,5 +1,6 @@
 import numpy as np
 
+#reads the files
 def filereader(plate, type, Angle = None, Frequency = None):
     import pandas as pd
     import os
@@ -144,9 +145,10 @@ Pa = data('A')
 #print(Pa.Get_Static_Free())
 AOA = 5
 Frq = 0.5
-fileselect = 5
+fileselect = 3
 Pa.Get_Dynamic(AOA,Frq)
 Pa.Split_Dynamic_Loaded(fileselect)
+print(Pa.dynamicloaded[fileselect,1])
 print(Pa.dynamicsplit)
     
 
