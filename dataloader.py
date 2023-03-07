@@ -63,7 +63,7 @@ def Separateruns(data):
         #print(np.where((Timedata['Time [s]'] < (4+Timedata['Time [s]'].iloc[i])) & (Timedata['Time [s]'] >= Timedata['Time [s]'].iloc[i]))[0])
         #input()
         #print(multirun['Time [s]'].iloc[np.where((Timedata['Time [s]'] < (4+Timedata['Time [s]'].iloc[i])) & (Timedata['Time [s]'] >= Timedata['Time [s]'].iloc[i]))[0]])
-        runs.append(multirun[:].iloc[np.where((Timedata['Time [s]'] < (4+Timedata['Time [s]'].iloc[i])) & (Timedata['Time [s]'] >= Timedata['Time [s]'].iloc[i]))[0]]) 
+        runs.append(multirun[:].iloc[np.where((Timedata['Time [s]'] < (7+Timedata['Time [s]'].iloc[i])) & (Timedata['Time [s]'] >= Timedata['Time [s]'].iloc[i]))[0]]) 
         #runs = np.append(runs,multirun['Time [s]'].iloc[np.where((Timedata['Time [s]'] < (4+Timedata['Time [s]'].iloc[i])) & (Timedata['Time [s]'] >= Timedata['Time [s]'].iloc[i]))[0]])
 
     
@@ -147,7 +147,7 @@ Frq = 0.5
 fileselect = 5
 Pa.Get_Dynamic(AOA,Frq)
 Pa.Split_Dynamic_Loaded(fileselect)
-print(len(Pa.dynamicsplit))
+print(Pa.dynamicsplit)
     
 
 
