@@ -35,6 +35,39 @@ def filereader(plate, type, Angle = None, Frequency = None):
     out = np.array(read, dtype=object)        
     return out
 
+#split the files into each response (only dynamic has the responces)
+def Separateruns(data):
+    runs = np.empty([0,1])
+    multirun = data[0]
+    Timedata = multirun[['Time [s]','Trigger [V]']]
+
+    #vartemp = np.where(Timedata['Trigger [V]'] > 3)[0]
+
+
+    triggerpoints = multirun['Time [s]'].iloc[np.where(Timedata['Trigger [V]'] > 3)[0]]
+    startpoints = []
+    for i in triggerpoints:
+        
+        smallestingroup = True
+        for a in triggerpoints:
+            if a<i and i<a+1:
+                smallestingroup = False
+        
+        if smallestingroup:
+
+            startpoints.append(np.where(Timedata['Time [s]'] == i)[0][0])
+            
+
+    
+    for i in startpoints:
+        print(np.where(Timedata['Time [s]'] < 4+Timedata['Time [s]'].iloc[i] and Timedata['Time [s]'] >= Timedata['Time [s]'].iloc[i])[0])
+        input()
+        runs = np.append(runs,multirun['Time [s]'].iloc[np.where(Timedata['Time [s]'] < 4+Timedata['Time [s]'].iloc[i] and Timedata['Time [s]'] >= Timedata['Time [s]'].iloc[i])[0]])
+
+ 
+    #print(vartemp)
+    #print(Timedata)
+    return runs
 
 class data:
 
@@ -52,7 +85,6 @@ class data:
         Dynamiccase = filereader(self.Plate,'Dynamic',A,F)
         self.dynamicloaded = Dynamiccase
         return Dynamiccase
-
 
     #gets the indexes of the free and locked cases
     def Split_static(self):
@@ -85,14 +117,16 @@ class data:
         self.Split_static()
         splitdata = self.static[self.static_locked_index]
         return splitdata
+
+
     
     
     
         
 Pa = data('A')
 #Pa.Split_static()
-print(Pa.Get_Static_Free())
-#print(Pa.Get_Dynamic(0,0.5))
+#print(Pa.Get_Static_Free())
+print(Separateruns(Pa.Get_Dynamic(0,8)[3,:]))
     
 
 
