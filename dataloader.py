@@ -37,7 +37,7 @@ def filereader(plate, type, Angle = None, Frequency = None):
 
 #split the files into each response (only dynamic has the responces)
 def Separateruns(data):
-    runs = np.empty([0,1])
+    runs = []
     multirun = data[0]
     Timedata = multirun[['Time [s]','Trigger [V]']]
 
@@ -60,11 +60,13 @@ def Separateruns(data):
 
     
     for i in startpoints:
-        print(np.where(Timedata['Time [s]'] < 4+Timedata['Time [s]'].iloc[i] and Timedata['Time [s]'] >= Timedata['Time [s]'].iloc[i])[0])
-        input()
-        runs = np.append(runs,multirun['Time [s]'].iloc[np.where(Timedata['Time [s]'] < 4+Timedata['Time [s]'].iloc[i] and Timedata['Time [s]'] >= Timedata['Time [s]'].iloc[i])[0]])
+        #print(np.where((Timedata['Time [s]'] < (4+Timedata['Time [s]'].iloc[i])) & (Timedata['Time [s]'] >= Timedata['Time [s]'].iloc[i]))[0])
+        #input()
+        #print(multirun['Time [s]'].iloc[np.where((Timedata['Time [s]'] < (4+Timedata['Time [s]'].iloc[i])) & (Timedata['Time [s]'] >= Timedata['Time [s]'].iloc[i]))[0]])
+        runs.append(multirun[:].iloc[np.where((Timedata['Time [s]'] < (4+Timedata['Time [s]'].iloc[i])) & (Timedata['Time [s]'] >= Timedata['Time [s]'].iloc[i]))[0]]) 
+        #runs = np.append(runs,multirun['Time [s]'].iloc[np.where((Timedata['Time [s]'] < (4+Timedata['Time [s]'].iloc[i])) & (Timedata['Time [s]'] >= Timedata['Time [s]'].iloc[i]))[0]])
 
- 
+    
     #print(vartemp)
     #print(Timedata)
     return runs
@@ -87,7 +89,7 @@ class data:
         return Dynamiccase
 
     #gets the indexes of the free and locked cases
-    def Split_static(self):
+    def Split_Static(self):
         
         listfreeindex = np.empty((0,1), dtype=int)
         listlockedindex = np.empty((0,1), dtype=int)
@@ -108,15 +110,29 @@ class data:
 
     #returns the array with only data from the free hinges
     def Get_Static_Free(self):
-        self.Split_static()
+        self.Split_Static()
         splitdata = self.static[self.static_free_index]
         return splitdata
 
     #returns the array with only data from the locked hinges
     def Get_Static_Locked(self):
-        self.Split_static()
+        self.Split_Static()
         splitdata = self.static[self.static_locked_index]
         return splitdata
+
+    #
+    def Split_Dynamic_Loaded(self,fileselect):
+
+        splitdata = Separateruns(self.dynamicloaded[fileselect,:])
+        self.dynamicsplit = splitdata
+        return splitdata
+
+    def Split_Dynamic_Unloaded(self,fileselect,data):
+        return Separateruns(data[fileselect,:])
+
+
+
+
 
 
     
@@ -126,7 +142,12 @@ class data:
 Pa = data('A')
 #Pa.Split_static()
 #print(Pa.Get_Static_Free())
-print(Separateruns(Pa.Get_Dynamic(0,8)[3,:]))
+AOA = 5
+Frq = 0.5
+fileselect = 5
+Pa.Get_Dynamic(AOA,Frq)
+Pa.Split_Dynamic_Loaded(fileselect)
+print(len(Pa.dynamicsplit))
     
 
 
