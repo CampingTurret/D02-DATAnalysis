@@ -73,7 +73,9 @@ def Separateruns(data):
     return runs
 
 class data:
-
+    """
+        Data class for use when processing, holds methods that automate the processing
+    """
     #Initialise plate
     def __init__(self,Plate):
         self.Plate = Plate
@@ -81,6 +83,9 @@ class data:
      
     #returns the array with the all the data from 1 dynamic case and loads it into object 
     def Get_Dynamic(self,angle,frequency):
+        """
+        Gets all files in a dynamic case, loads them into the objects and returns them
+        """
           
         A = str(angle)
         F = str(frequency).replace(".","")
@@ -91,6 +96,10 @@ class data:
 
     #gets the indexes of the free and locked cases
     def Split_Static(self):
+        """
+        Splits the static cases for the plates between locked and free and loads them into the class object
+
+        """
         
         listfreeindex = np.empty((0,1), dtype=int)
         listlockedindex = np.empty((0,1), dtype=int)
@@ -111,41 +120,47 @@ class data:
 
     #returns the array with only data from the free hinges
     def Get_Static_Free(self):
+        """
+        returns the data for the static free case
+        """
         self.Split_Static()
         splitdata = self.static[self.static_free_index]
         return splitdata
 
     #returns the array with only data from the locked hinges
     def Get_Static_Locked(self):
+        """
+        returns the data for the static locked case
+        """
         self.Split_Static()
         splitdata = self.static[self.static_locked_index]
         return splitdata
 
     #
     def Split_Dynamic_Loaded(self,fileselect):
-
+        """
+        returns and loads the data for the dynamic case with a given file ID
+        """
         splitdata = Separateruns(self.dynamicloaded[fileselect,:])
         self.dynamicsplit = splitdata
         return splitdata
 
     def Split_Dynamic_Unloaded(self,fileselect,data):
+        """
+        returns the data for the dynamic case with a given file ID
+
+        Dynamic_Loaded is prefered if data is proccessed afterwards
+        """
         return Separateruns(data[fileselect,:])
 
-
-
-
-
-
-    
-    
-    
-        
+      
 Pa = data('A')
 #Pa.Split_static()
 #print(Pa.Get_Static_Free())
 AOA = 5
 Frq = 0.5
 fileselect = 3
+
 Pa.Get_Dynamic(AOA,Frq)
 Pa.Split_Dynamic_Loaded(fileselect)
 print(Pa.dynamicloaded[fileselect,1])
