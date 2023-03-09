@@ -1,6 +1,11 @@
 import numpy as np
+from neuralnet import DynamicNNstage1, Dynamicdataset
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
 
 #reads the files
+
 def filereader(plate, type, Angle = None, Frequency = None):
     import pandas as pd
     import os
@@ -37,7 +42,10 @@ def filereader(plate, type, Angle = None, Frequency = None):
     return out
 
 #split the files into each response (only dynamic has the responces)
-def Separateruns(data):
+def Separateruns(data,hz = 0.5):
+    """
+        Split the files into each response (only dynamic has the responces)
+    """
     runs = []
     multirun = data[0]
     Timedata = multirun[['Time [s]','Trigger [V]']]
@@ -59,18 +67,28 @@ def Separateruns(data):
             startpoints.append(np.where(Timedata['Time [s]'] == i)[0][0])
             
 
-    
+    hzcorrection = 1/hz /2
     for i in startpoints:
-        #print(np.where((Timedata['Time [s]'] < (4+Timedata['Time [s]'].iloc[i])) & (Timedata['Time [s]'] >= Timedata['Time [s]'].iloc[i]))[0])
-        #input()
-        #print(multirun['Time [s]'].iloc[np.where((Timedata['Time [s]'] < (4+Timedata['Time [s]'].iloc[i])) & (Timedata['Time [s]'] >= Timedata['Time [s]'].iloc[i]))[0]])
-        runs.append(multirun[:].iloc[np.where((Timedata['Time [s]'] < (7+Timedata['Time [s]'].iloc[i])) & (Timedata['Time [s]'] >= Timedata['Time [s]'].iloc[i]))[0]]) 
+        
+        run = multirun[:].iloc[np.where((Timedata['Time [s]'] < (4+hzcorrection+Timedata['Time [s]'].iloc[i])) & (Timedata['Time [s]'] >= Timedata['Time [s]'].iloc[i]))[0]]
+        run['Time [s]'] = run['Time [s]'] - run['Time [s]'].values[:1]
+        runs.append(run) 
+        
         #runs = np.append(runs,multirun['Time [s]'].iloc[np.where((Timedata['Time [s]'] < (4+Timedata['Time [s]'].iloc[i])) & (Timedata['Time [s]'] >= Timedata['Time [s]'].iloc[i]))[0]])
 
     
     #print(vartemp)
     #print(Timedata)
     return runs
+
+def Train_NN(model,data,epoch,lr):
+
+    loader = torch.utils.data.DataLoader(data, batch_size=4, shuffle=True)
+    print(data[:])
+
+
+    return model
+
 
 class data:
     """
@@ -137,34 +155,50 @@ class data:
         return splitdata
 
     #
-    def Split_Dynamic_Loaded(self,fileselect):
+    def Split_Dynamic_Loaded(self,fileselect,hz):
         """
         returns and loads the data for the dynamic case with a given file ID
         """
-        splitdata = Separateruns(self.dynamicloaded[fileselect,:])
+        splitdata = Separateruns(self.dynamicloaded[fileselect,:],hz)
         self.dynamicsplit = splitdata
+        self.dynamichz = hz
         return splitdata
 
-    def Split_Dynamic_Unloaded(self,fileselect,data):
+    def Split_Dynamic_Unloaded(self,fileselect,data,hz):
         """
         returns the data for the dynamic case with a given file ID
 
         Dynamic_Loaded is prefered if data is proccessed afterwards
         """
-        return Separateruns(data[fileselect,:])
+        return Separateruns(data[fileselect,:],hz)
+
+    def Train_Dynamic_models_2D_Loaded(self,Xname,Yname,epoch = 500,lr = 0.01):
+        """
+        returns ai models per splitdata and loads them
+
+        """
+        models = []
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        for i in self.dynamicsplit:
+            
+            targets = torch.tensor(i[Yname].values)
+            inputdata = torch.tensor(i[Xname].values)
+            dataset = torch.data_utils.TensorDataset(inputdata, targets)  #Dynamicdataset(inputdata,targets)
+            trained = Train_NN( DynamicNNstage1(len(Xname),len(Yname)), dataset , epoch, lr)
+            models.append(trained)
+
+        self.Dynamicmodelstrained = models
+        return models
+
+    
+
+    
+        
+
+    
 
       
-Pa = data('A')
-#Pa.Split_static()
-#print(Pa.Get_Static_Free())
-AOA = 5
-Frq = 0.5
-fileselect = 3
 
-Pa.Get_Dynamic(AOA,Frq)
-Pa.Split_Dynamic_Loaded(fileselect)
-print(Pa.dynamicloaded[fileselect,1])
-print(Pa.dynamicsplit)
     
 
 
