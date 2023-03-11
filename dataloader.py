@@ -197,10 +197,11 @@ class data:
         models = []
         device = "cuda" if torch.cuda.is_available() else "cpu"
         
-        for i in tqdm(self.dynamicsplit):
-            
-            targets = torch.tensor(i[Yname].values).to(device)
-            inputdata = torch.tensor(i[Xname].values).to(device)
+        fig, axs = plt.subplots(len(self.dynamicsplit),sharex=True)
+        for i in tqdm(range(len(self.dynamicsplit))):
+            maindataset = self.dynamicsplit[i]
+            targets = torch.tensor(maindataset[Yname].values).to(device)
+            inputdata = torch.tensor(maindataset[Xname].values).to(device)
             dataset = torch.utils.data.TensorDataset(inputdata, targets)                    
             trained = Train_NN( DynamicNNstage1(len(Xname),len(Yname)).to(device), dataset , epoch, lr)
             #print(torch.cuda.utilization('cuda'))
@@ -214,16 +215,15 @@ class data:
             y = trained(x).to(device)
             x = x.detach().cpu().numpy()
             y = y.detach().cpu().numpy()[:,1]
-            plt.plot(x,y,label = 'model')
-            plt.plot(i[Xname].values,i[Yname].values[:,1],label = 'data')
-            plt.xlabel("Time [s]")
-            plt.ylabel("bendingmoment")
+            axs[i].plot(x,y,label = 'model')
+            axs[i].plot(maindataset[Xname].values,maindataset[Yname].values[:,1])
 
 
             #passing model
             models.append(trained)
 
-
+        plt.xlabel("Time [s]")
+        plt.ylabel("bendingmoment")
         plt.show()
         self.Dynamicmodelstrained = models
         return models
