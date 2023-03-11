@@ -3,7 +3,8 @@ from neuralnet import DynamicNNstage1, Dynamicdataset
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+import matplotlib.pyplot as plt
+from tqdm import tqdm
 #reads the files
 
 def filereader(plate, type, Angle = None, Frequency = None):
@@ -70,7 +71,7 @@ def Separateruns(data,hz = 0.5):
     hzcorrection = 1/hz /2
     for i in startpoints:
         
-        run = multirun[:].iloc[np.where((Timedata['Time [s]'] < (4+hzcorrection+Timedata['Time [s]'].iloc[i])) & (Timedata['Time [s]'] >= Timedata['Time [s]'].iloc[i]))[0]]
+        run = multirun[:].iloc[np.where((Timedata['Time [s]'] < (3+hzcorrection+Timedata['Time [s]'].iloc[i])) & (Timedata['Time [s]'] >= Timedata['Time [s]'].iloc[i]))[0]]
         run['Time [s]'] = run['Time [s]'] - run['Time [s]'].values[:1]
         runs.append(run) 
         
@@ -82,10 +83,25 @@ def Separateruns(data,hz = 0.5):
     return runs
 
 def Train_NN(model,data,epoch,lr):
+    
+    test, val = torch.utils.data.random_split(data, [0.8,0.2],torch.Generator(device='cpu'))
+    loader_train = torch.utils.data.DataLoader(test, batch_size=256, shuffle=True)
+    loader_val = torch.utils.data.DataLoader(val, batch_size=256, shuffle=True)
+    loss_fn = torch.nn.MSELoss()
+    optimizer = torch.optim.Adam(model.parameters(),lr=lr)
 
-    loader = torch.utils.data.DataLoader(data, batch_size=4, shuffle=True)
-    print(data[:])
+    for i in range(epoch):
+        model.train(True)
+        for data in iter(loader_train):
+            inputs, wanted = data
+            optimizer.zero_grad()
+            outputs = model(inputs)
+            loss = loss_fn(outputs, wanted)
+            loss.backward()
+            optimizer.step()
 
+        torch.cuda.utilization('cuda')
+        
 
     return model
 
@@ -95,18 +111,20 @@ class data:
         Data class for use when processing, holds methods that automate the processing
     """
     #Initialise plate
-    def __init__(self,Plate):
+    def __init__(self,Plate,AOA,hz):
         self.Plate = Plate
+        self.dynamichz  = hz
+        self.dynamicAOA = AOA
         self.static = filereader(Plate,'static')
      
     #returns the array with the all the data from 1 dynamic case and loads it into object 
-    def Get_Dynamic(self,angle,frequency):
+    def Get_Dynamic(self):
         """
         Gets all files in a dynamic case, loads them into the objects and returns them
         """
           
-        A = str(angle)
-        F = str(frequency).replace(".","")
+        A = str(self.dynamicAOA)
+        F = str(self.dynamichz).replace(".","")
 
         Dynamiccase = filereader(self.Plate,'Dynamic',A,F)
         self.dynamicloaded = Dynamiccase
@@ -155,22 +173,21 @@ class data:
         return splitdata
 
     #
-    def Split_Dynamic_Loaded(self,fileselect,hz):
+    def Split_Dynamic_Loaded(self,fileselect):
         """
         returns and loads the data for the dynamic case with a given file ID
         """
-        splitdata = Separateruns(self.dynamicloaded[fileselect,:],hz)
+        splitdata = Separateruns(self.dynamicloaded[fileselect,:],self.dynamichz)
         self.dynamicsplit = splitdata
-        self.dynamichz = hz
         return splitdata
 
-    def Split_Dynamic_Unloaded(self,fileselect,data,hz):
+    def Split_Dynamic_Unloaded(self,fileselect,data):
         """
         returns the data for the dynamic case with a given file ID
 
         Dynamic_Loaded is prefered if data is proccessed afterwards
         """
-        return Separateruns(data[fileselect,:],hz)
+        return Separateruns(data[fileselect,:])
 
     def Train_Dynamic_models_2D_Loaded(self,Xname,Yname,epoch = 500,lr = 0.01):
         """
@@ -179,14 +196,35 @@ class data:
         """
         models = []
         device = "cuda" if torch.cuda.is_available() else "cpu"
-        for i in self.dynamicsplit:
+        
+        for i in tqdm(self.dynamicsplit):
             
-            targets = torch.tensor(i[Yname].values)
-            inputdata = torch.tensor(i[Xname].values)
-            dataset = torch.data_utils.TensorDataset(inputdata, targets)  #Dynamicdataset(inputdata,targets)
-            trained = Train_NN( DynamicNNstage1(len(Xname),len(Yname)), dataset , epoch, lr)
+            targets = torch.tensor(i[Yname].values).to(device)
+            inputdata = torch.tensor(i[Xname].values).to(device)
+            dataset = torch.utils.data.TensorDataset(inputdata, targets)                    
+            trained = Train_NN( DynamicNNstage1(len(Xname),len(Yname)).to(device), dataset , epoch, lr)
+            #print(torch.cuda.utilization('cuda'))
+
+            ##plotting
+
+            x =  np.linspace(0, 3 +  0.5/self.dynamichz , 10000)
+            x = torch.from_numpy(x)
+            x = x.view(-1, 1).to(device)
+            x = x.to(device)
+            y = trained(x).to(device)
+            x = x.detach().cpu().numpy()
+            y = y.detach().cpu().numpy()[:,1]
+            plt.plot(x,y,label = 'model')
+            plt.plot(i[Xname].values,i[Yname].values[:,1],label = 'data')
+            plt.xlabel("Time [s]")
+            plt.ylabel("bendingmoment")
+
+
+            #passing model
             models.append(trained)
 
+
+        plt.show()
         self.Dynamicmodelstrained = models
         return models
 

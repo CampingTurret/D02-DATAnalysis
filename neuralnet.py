@@ -7,15 +7,25 @@ class DynamicNNstage1(nn.Module):
 
     def __init__(self,xlen,ylen):
         super().__init__()
+        
         self.linear_relu_stack = nn.Sequential(
-            nn.Linear(xlen, 10),
+            nn.Linear(xlen, 100),
             nn.ReLU(),
-            nn.Linear(10, 20),
+            nn.Linear(100, 200),
             nn.ReLU(),
-            nn.Linear(20, 10),
+            nn.Linear(200, 200),
             nn.ReLU(),
-            nn.Linear(10, ylen),
+            nn.Linear(200, 200),
+            nn.ReLU(),
+            nn.Linear(200, 200),
+            nn.ReLU(),
+            nn.Linear(200, 200),
+            nn.ReLU(),
+            nn.Linear(200, 100),
+            nn.ReLU(),
+            nn.Linear(100, ylen),
         )
+        self.linear_relu_stack.to(torch.float64)
    
     def forward(self, x):
         logits = self.linear_relu_stack(x)
