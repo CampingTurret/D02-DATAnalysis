@@ -200,9 +200,9 @@ class data:
         fig, axs = plt.subplots(len(self.dynamicsplit),sharex=True)
         for i in tqdm(range(len(self.dynamicsplit))):
             maindataset = self.dynamicsplit[i]
-            targets = torch.tensor(maindataset[Yname].values).to(device)
-            inputdata = torch.tensor(maindataset[Xname].values).to(device)
-            dataset = torch.utils.data.TensorDataset(inputdata, targets)                    
+            targets = torch.tensor(maindataset[Yname].values, dtype= torch.float64).to(device)
+            inputdata = torch.tensor(maindataset[Xname].values,dtype= torch.float64).to(device)
+            dataset = torch.utils.data.TensorDataset(inputdata, targets)  
             trained = Train_NN( DynamicNNstage1(len(Xname),len(Yname)).to(device), dataset , epoch, lr)
             #print(torch.cuda.utilization('cuda'))
 
