@@ -228,6 +228,17 @@ class data:
         self.Dynamicmodelstrained = models
         return models
 
+    def run_analysis_2D(self):
+
+        fileselect = 5
+        self.Get_Dynamic()
+        self.Split_Dynamic_Loaded(fileselect)
+        print(self.dynamicloaded[fileselect,1])
+        self.Train_Dynamic_models_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
+        finalmodel = 0
+        finaldataset = 0
+        return finalmodel, finaldataset
+
     
 
     
