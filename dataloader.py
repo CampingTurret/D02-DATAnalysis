@@ -229,7 +229,12 @@ class data:
         return models
 
     def run_analysis_2D(self):
+        """
 
+        Runs the 2D proccessing procedure.
+        it is fully automated
+
+        """
         fileselect = 5
         self.Get_Dynamic()
         self.Split_Dynamic_Loaded(fileselect)
