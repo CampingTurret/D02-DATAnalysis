@@ -100,7 +100,7 @@ def Train_NN(model,data,epoch,lr):
             loss.backward()
             optimizer.step()
 
-        torch.cuda.utilization('cuda')
+        #torch.cuda.utilization('cuda')
         
 
     return model
