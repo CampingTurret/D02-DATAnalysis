@@ -11,6 +11,7 @@ def GapDetect(DirtyData: list):
     """
     indinces = []
     CleanData = []
+    removed = len(DirtyData)
     for i in range(len(DirtyData)):
         indinces.append(len(DirtyData[i]))
     avglength = np.mean(indinces)
@@ -18,6 +19,8 @@ def GapDetect(DirtyData: list):
     for i in range(len(DirtyData)):
         if len(DirtyData[i]) < (avglength + 200) and len(DirtyData[i]) > (avglength - 200):
             CleanData.append(DirtyData[i])
-    print(CleanData)
+            removed = removed - 1
+    print("\n",removed, "samples removed due to gaps")
+    #print(CleanData)
     return CleanData
 
