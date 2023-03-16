@@ -9,6 +9,7 @@ import torch.nn.functional as F
 import matplotlib.pyplot as plt
 from tqdm.auto import tqdm,trange
 from GapDetect import GapDetect
+from ExtremeValues import EVDetect
 #reads the files
 
 def filereader(plate, type, Angle = None, Frequency = None):
@@ -219,6 +220,16 @@ class data:
         self.dynamicsplit = splitdata
         return splitdata
 
+    def Remove_Outliers_Dynamic(self):
+
+        models = self.Dynamicmainmodeltrained
+        splitdata = self.dynamicsplit
+
+        Maindata = EVDetect()
+
+        self.Dynamicfullload = Maindata
+        return Maindata
+
     def Train_Dynamic_models_2D_Loaded(self,Xname,Yname,epoch = 500,lr = 0.01):
         """
         returns ai models per splitdata and loads them
@@ -226,39 +237,36 @@ class data:
         """
         models = []
         device = "cuda" if torch.cuda.is_available() else "cpu"
-        
-        fig, axs = plt.subplots(len(self.dynamicsplit),sharex=True)
+       
         for i in trange(len(self.dynamicsplit),desc= 'Training 1st step'):
             maindataset = self.dynamicsplit[i]
             targets = torch.tensor(maindataset[Yname].values, dtype= torch.float64).to(device)
             inputdata = torch.tensor(maindataset[Xname].values,dtype= torch.float64).to(device)
             dataset = torch.utils.data.TensorDataset(inputdata, targets)  
             trained = Train_NN( DynamicNNstage1(len(Xname),len(Yname)).to(device), dataset , epoch, lr)
-            #print(torch.cuda.utilization('cuda'))
-
-            ##plotting
-
-            x =  np.linspace(0, 3 +  0.5/self.d.ynamichz , 10000)
-            x = torch.from_numpy(x)
-            x = x.view(-1, 1).to(device)
-            x = x.to(device)
-            y = trained(x).to(device)
-            x = x.detach().cpu().numpy()
-            y = y.detach().cpu().numpy()[:,1]
-            axs[i].plot(x,y,label = 'model')
-            axs[i].plot(maindataset[Xname].values,maindataset[Yname].values[:,1])
-
-
             #passing model
             models.append(trained)
-
-        plt.xlabel("Time [s]")
-        plt.ylabel("bendingmoment")
-        plt.show()
         self.Dynamicmodelsstrained = models
         return models
 
+    def Train_Dynamic_Model_Main_2D_Loaded(self,Xname,Yname,epoch = 2000,lr = 0.01):
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        maindataset = self.Dynamicfullload
+        targets = torch.tensor(maindataset[Yname].values, dtype= torch.float64).to(device)
+        inputdata = torch.tensor(maindataset[Xname].values,dtype= torch.float64).to(device)
+        dataset = torch.utils.data.TensorDataset(inputdata, targets)  
+        trained = Train_NN( DynamicNNstage1(len(Xname),len(Yname)).to(device), dataset , epoch, lr)
+        trained.eval()
+
+        self.Dynamicmainmodeltrained = trained
+        return trained
+
     def Plot_Regression_intermodels_2D_Loaded(self,Xname,Yname):
+        """
+
+        Plots the results from the models made during the intrim regression
+
+        """
         models = self.Dynamicmodelsstrained
         device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -280,10 +288,15 @@ class data:
         return
 
     def Plot_Raw_2D_Loaded(self,Xname,Yname):
-        fig, axs = plt.subplots(len(self.dynamicsplit),sharex=True)
+        """
+
+        Plots the raw data, needs a dynamic case to be split
+
+        """
+       
         for i in range(len(self.dynamicsplit)):
             maindataset = self.dynamicsplit[i]
-            axs[i].plot(maindataset[Xname].values,maindataset[Yname].values[:])
+            plt.plot(maindataset[Xname].values,maindataset[Yname].values[:])
         plt.xlabel(Xname)
         plt.ylabel(Yname)
         plt.show()
@@ -293,7 +306,7 @@ class data:
     def run_analysis_2D(self):
         """
 
-        Runs the 2D proccessing procedure.
+        Runs the 2D proccessing procedure from scratch.
         it is fully automated
 
         """
@@ -308,7 +321,9 @@ class data:
 
         return finalmodels, finaldatasets
 
-    
+    def run_analysis_2D_Short(self):
+
+        return
 
     
         
