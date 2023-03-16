@@ -270,6 +270,8 @@ class data:
             fileselect = i
             self.Get_Dynamic()
             self.Split_Dynamic_Loaded(fileselect)
+
+
             #self.Remove_Gaps_Dynamic()
             self.Train_Dynamic_models_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
 
