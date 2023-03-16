@@ -8,6 +8,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 from tqdm.auto import tqdm,trange
+from GapDetect import GapDetect
 #reads the files
 
 def filereader(plate, type, Angle = None, Frequency = None):
@@ -209,6 +210,13 @@ class data:
         """
         return Separateruns(data[fileselect,:])
 
+    def Remove_Gaps_Dynamic(self):
+
+        splitdata = GapDetect(self.dynamicsplit)
+
+        self.dynamicsplit = splitdata
+        return splitdata
+
     def Train_Dynamic_models_2D_Loaded(self,Xname,Yname,epoch = 500,lr = 0.01):
         """
         returns ai models per splitdata and loads them
@@ -262,6 +270,7 @@ class data:
             fileselect = i
             self.Get_Dynamic()
             self.Split_Dynamic_Loaded(fileselect)
+            self.Remove_Gaps_Dynamic()
             self.Train_Dynamic_models_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
 
         return finalmodels, finaldatasets
