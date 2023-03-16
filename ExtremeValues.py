@@ -13,6 +13,7 @@ def EVDetect(Models, Data):
     indexlist = []
     for i in trange(len(Models)):
 
+        extremecondition = True
         if extremecondition:
             indexlist.append(i)
 
