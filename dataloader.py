@@ -1,10 +1,13 @@
+from datetime import time
+from math import fabs
+from pickletools import optimize
 import numpy as np
 from neuralnet import DynamicNNstage1, Dynamicdataset
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
-from tqdm import tqdm
+from tqdm.auto import tqdm,trange
 #reads the files
 
 def filereader(plate, type, Angle = None, Frequency = None):
@@ -89,8 +92,11 @@ def Train_NN(model,data,epoch,lr):
     loader_val = torch.utils.data.DataLoader(val, batch_size=256, shuffle=True)
     loss_fn = torch.nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(),lr=lr)
+    prevlost = 2*10**4
+    startpatience = 4
+    patience = startpatience
 
-    for i in range(epoch):
+    for i in trange(epoch,desc = "epoch",leave=False):
         model.train(True)
         for data in iter(loader_train):
             inputs, wanted = data
@@ -100,9 +106,23 @@ def Train_NN(model,data,epoch,lr):
             loss.backward()
             optimizer.step()
 
-        #torch.cuda.utilization('cuda')
-        
 
+        
+        if i > epoch/4:
+            model.eval()
+            with torch.no_grad():
+                for data in iter(loader_val):
+                    inputs, wanted = data
+                    outputs = model(inputs)
+                    lossval = torch.sum(loss_fn(outputs, wanted))
+            if abs(lossval.item()) >= abs(prevlost + 0.001):
+                if patience < 0:
+                    return model
+                else: 
+                    patience = patience - 1
+            else:
+                patience = startpatience
+                prevlost = min(lossval.item(),prevlost)
     return model
 
 
@@ -198,7 +218,7 @@ class data:
         device = "cuda" if torch.cuda.is_available() else "cpu"
         
         fig, axs = plt.subplots(len(self.dynamicsplit),sharex=True)
-        for i in tqdm(range(len(self.dynamicsplit))):
+        for i in trange(len(self.dynamicsplit),desc= 'Training 1st step'):
             maindataset = self.dynamicsplit[i]
             targets = torch.tensor(maindataset[Yname].values, dtype= torch.float64).to(device)
             inputdata = torch.tensor(maindataset[Xname].values,dtype= torch.float64).to(device)
@@ -225,7 +245,7 @@ class data:
         plt.xlabel("Time [s]")
         plt.ylabel("bendingmoment")
         plt.show()
-        self.Dynamicmodelstrained = models
+        self.Dynamicmodelsstrained = models
         return models
 
     def run_analysis_2D(self):
@@ -235,14 +255,16 @@ class data:
         it is fully automated
 
         """
-        fileselect = 5
+        finalmodels = 0
+        finaldatasets = 0
         self.Get_Dynamic()
-        self.Split_Dynamic_Loaded(fileselect)
-        print(self.dynamicloaded[fileselect,1])
-        self.Train_Dynamic_models_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
-        finalmodel = 0
-        finaldataset = 0
-        return finalmodel, finaldataset
+        for i in trange(len(self.Get_Dynamic()),desc='Files completed'):
+            fileselect = i
+            self.Get_Dynamic()
+            self.Split_Dynamic_Loaded(fileselect)
+            self.Train_Dynamic_models_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
+
+        return finalmodels, finaldatasets
 
     
 
