@@ -225,7 +225,7 @@ class data:
         models = self.Dynamicmainmodeltrained
         splitdata = self.dynamicsplit
 
-        Maindata = EVDetect()
+        Maindata = EVDetect(models,splitdata)
 
         self.Dynamicfullload = Maindata
         return Maindata
@@ -318,12 +318,23 @@ class data:
             self.Split_Dynamic_Loaded(fileselect)
             self.Remove_Gaps_Dynamic()
             self.Train_Dynamic_models_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
+            self.Remove_Outliers_Dynamic()
+            self.Train_Dynamic_Model_Main_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
 
         return finalmodels, finaldatasets
 
-    def run_analysis_2D_Short(self):
+    def run_Train_2D(self):
+        self.Get_Dynamic()
+        for i in trange(len(self.Get_Dynamic()),desc='Files completed'):
+            fileselect = i
+            self.Split_Dynamic_Loaded(fileselect)
+            self.Remove_Gaps_Dynamic()
+            self.Train_Dynamic_models_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
+            self.Remove_Outliers_Dynamic()
+            self.Train_Dynamic_Model_Main_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
 
         return
+            
 
     
         
