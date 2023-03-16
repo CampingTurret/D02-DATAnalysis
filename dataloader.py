@@ -109,21 +109,23 @@ def Train_NN(model,data,epoch,lr):
 
 
         
-        if i > epoch/4:
+        if i > epoch/2:
             model.eval()
             with torch.no_grad():
                 for data in iter(loader_val):
                     inputs, wanted = data
                     outputs = model(inputs)
                     lossval = torch.sum(loss_fn(outputs, wanted))
-            if abs(lossval.item()) >= abs(prevlost + 0.001):
-                if patience < 0:
-                    return model
-                else: 
-                    patience = patience - 1
-            else:
-                patience = startpatience
-                prevlost = min(lossval.item(),prevlost)
+                lossvalnew = lossval.item()
+            if abs(lossvalnew < 20):
+                if abs(lossval.item()) >= abs(prevlost + 0.001):
+                    if patience < 0:
+                        return model
+                    else: 
+                        patience = patience - 1
+                else:
+                    patience = startpatience
+                    prevlost = min(lossval.item(),prevlost)
     return model
 
 
@@ -236,7 +238,7 @@ class data:
 
             ##plotting
 
-            x =  np.linspace(0, 3 +  0.5/self.dynamichz , 10000)
+            x =  np.linspace(0, 3 +  0.5/self.d.ynamichz , 10000)
             x = torch.from_numpy(x)
             x = x.view(-1, 1).to(device)
             x = x.to(device)
@@ -270,9 +272,7 @@ class data:
             fileselect = i
             self.Get_Dynamic()
             self.Split_Dynamic_Loaded(fileselect)
-
-
-            #self.Remove_Gaps_Dynamic()
+            self.Remove_Gaps_Dynamic()
             self.Train_Dynamic_models_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
 
         return finalmodels, finaldatasets
