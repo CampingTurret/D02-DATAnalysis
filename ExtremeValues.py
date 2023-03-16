@@ -5,12 +5,16 @@ from tqdm.auto import tqdm,trange
 import numpy as np
 import pandas as pd
 
-def EVDetect(Models):
+def EVDetect(Models, Data):
     """
     Removes extreme values from the dataset
 
     """
+    indexlist = []
+    for i in trange(len(Models)):
 
-    CleanData = DirtyData
+        if extremecondition:
+            indexlist.append(i)
 
-    return CleanData
+    GoodData = Data[indexlist]
+    return GoodData

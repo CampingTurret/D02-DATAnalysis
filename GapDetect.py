@@ -6,6 +6,7 @@ def GapDetect(DirtyData):
     """
     Removes Gaps in data due to errors in data aquisition
     """
+    for i in trange(len(Dirtydata))
 
     CleanData = DirtyData
 
