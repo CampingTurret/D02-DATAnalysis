@@ -258,6 +258,38 @@ class data:
         self.Dynamicmodelsstrained = models
         return models
 
+    def Plot_Regression_intermodels_2D_Loaded(self,Xname,Yname):
+        models = self.Dynamicmodelsstrained
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+
+        fig, axs = plt.subplots(len(self.dynamicsplit),sharex=True)
+        for i in range(models):
+            maindataset = self.dynamicsplit[i]
+            x =  np.linspace(0, 3 +  0.5/self.d.ynamichz , 10000)
+            x = torch.from_numpy(x)
+            x = x.view(-1, 1).to(device)
+            x = x.to(device)
+            y = self.Dynamicmodelsstrained[i](x).to(device)
+            x = x.detach().cpu().numpy()
+            y = y.detach().cpu().numpy()[:,1]
+            axs[i].plot(x,y,label = 'model')
+            axs[i].plot(maindataset[Xname].values,maindataset[Yname].values[:,1])
+        plt.xlabel("Time [s]")
+        plt.ylabel("bendingmoment")
+        plt.show()
+        return
+
+    def Plot_Raw_2D_Loaded(self,Xname,Yname):
+        fig, axs = plt.subplots(len(self.dynamicsplit),sharex=True)
+        for i in range(len(self.dynamicsplit)):
+            maindataset = self.dynamicsplit[i]
+            axs[i].plot(maindataset[Xname].values,maindataset[Yname].values[:])
+        plt.xlabel(Xname)
+        plt.ylabel(Yname)
+        plt.show()
+        return
+
+
     def run_analysis_2D(self):
         """
 
@@ -270,7 +302,6 @@ class data:
         self.Get_Dynamic()
         for i in trange(len(self.Get_Dynamic()),desc='Files completed'):
             fileselect = i
-            self.Get_Dynamic()
             self.Split_Dynamic_Loaded(fileselect)
             self.Remove_Gaps_Dynamic()
             self.Train_Dynamic_models_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
