@@ -6,8 +6,14 @@ def GapDetect(DirtyData):
     """
     Removes Gaps in data due to errors in data aquisition
     """
-    for i in trange(len(Dirtydata))
+    #DirtyData is a list of a list 
+    CleanData = []
+    for i in trange(len(Dirtydata)):
 
-    CleanData = DirtyData
+        if condition:
+            CleanData = CleanData.append()
+            
+
+
 
     return CleanData
