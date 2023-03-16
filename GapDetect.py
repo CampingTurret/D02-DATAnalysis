@@ -3,19 +3,21 @@ from tqdm.auto import tqdm,trange
 import numpy as np
 import pandas as pd
 
-def GapDetect(DirtyData:list):
+
+
+def GapDetect(DirtyData: list):
     """
-    Removes Gaps in data due to errors in data aquisition
+    Removes Gaps in data due to errors in data acquisition
     """
-    #DirtyData is a list of a list 
+    indinces = []
     CleanData = []
-    for i in trange(len(DirtyData)):
-        print(DirtyData)
-        condition = False
-        if condition:
-            CleanData = CleanData.append(DirtyData[i])
-            
-
-
+    for i in range(len(DirtyData)):
+        indinces.append(len(DirtyData[i]))
+    avglength = np.mean(indinces)
+    
+    for i in range(len(DirtyData)):
+        if len(DirtyData[i]) < (avglength + 200) and len(DirtyData[i]) > (avglength - 200):
+            CleanData.append(DirtyData[i])
     print(CleanData)
     return CleanData
+
