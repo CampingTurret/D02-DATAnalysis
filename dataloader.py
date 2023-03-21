@@ -9,19 +9,20 @@ import matplotlib.pyplot as plt
 from tqdm.auto import tqdm,trange
 from GapDetect import GapDetect
 from ExtremeValues import EVDetect
+import os
+import pandas as pd
 #reads the files
 
-def filereader(plate, type, Angle = None, Frequency = None):
-    import pandas as pd
-    import os
+def filereader(plate, ftype, Angle = None, Frequency = None):
+   
     read = []
 
     headerrow = ['Time [s]','Pot [V]','Pot [degree]','AF [V]','AF_f [V]','AR [V]','AR_f [V]','SC [mV]','SF [mV]','SR [mv]','Bending [N-mm]','Servo','Trigger [V]']
     #for static cases
-    if(type == 'Static' or type == 'static'): 
-        type = 'Static'
+    if(ftype == 'Static' or ftype == 'static'): 
+        ftype = 'Static'
         platenameformat = plate.replace(" ","_")
-        dirpath = os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','DATA',f'Plate {plate}',f'{type}'))
+        dirpath = os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','DATA',f'Plate {plate}',f'{ftype}'))
         allfiles = [f for f in os.listdir(dirpath)]
         for f in allfiles:
             tempf = os.path.join(dirpath,f)
@@ -31,9 +32,9 @@ def filereader(plate, type, Angle = None, Frequency = None):
             read.append([data,f])
 
     #for dynamic cases
-    elif(type == 'Dynamic' or type == 'dynamic'): 
-        type = 'Dynamic'
-        dirpath = os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','DATA',f'Plate {plate}',f'{type}',f'A{Angle}',f'F{Frequency}'))
+    elif(ftype == 'Dynamic' or ftype == 'dynamic'): 
+        ftype = 'Dynamic'
+        dirpath = os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','DATA',f'Plate {plate}',f'{ftype}',f'A{Angle}',f'F{Frequency}'))
         allfiles = [f for f in os.listdir(dirpath)]
         for f in allfiles:
             tempf = os.path.join(dirpath,f)
@@ -260,7 +261,24 @@ class data:
         self.Dynamicmainmodeltrained = trained
         return trained
 
-    
+    def Save_Model(self,model,filename :str):
+        plate = self.Plate
+        ftype = 'Dynamic'
+
+        A = str(self.dynamicAOA)
+        F = str(self.dynamichz).replace(".","")
+
+        filename.split('_')
+        for i in filename:
+            if i == 'Free': name = 'Free.help'
+            if i == 'Locked': name = 'Locked.help'
+            if i == 'Pre': name = 'Pre.help'
+            if i == 'Rel0': name = 'Rel0.help'
+            if i == 'Rel50': name = 'Rel50.help'
+            if i == 'Rel100': name = 'Rel100.help'
+        Path = os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','MODELS',f'Plate {plate}',f'{ftype}',f'A{A}',f'F{F}',name))
+        torch.save(model,Path)
+        return
 
     def Plot_Regression_intermodels_2D_Loaded(self,Xname,Yname):
         """
@@ -303,8 +321,6 @@ class data:
         plt.show()
         return
 
-    
-
 
     def run_analysis_2D(self):
         """
@@ -324,6 +340,7 @@ class data:
             self.Remove_Outliers_Dynamic()
             self.Train_Dynamic_Model_Main_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
 
+        
         return finalmodels, finaldatasets
 
     def run_Train_2D(self):
