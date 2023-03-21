@@ -1,5 +1,4 @@
 from datetime import time
-from math import fabs
 from pickletools import optimize
 import numpy as np
 from neuralnet import DynamicNNstage1, Dynamicdataset
@@ -222,7 +221,7 @@ class data:
 
     def Remove_Outliers_Dynamic(self):
 
-        models = self.Dynamicmainmodeltrained
+        models = self.Dynamicmodelsstrained
         splitdata = self.dynamicsplit
 
         Maindata = EVDetect(models,splitdata)
@@ -260,6 +259,8 @@ class data:
 
         self.Dynamicmainmodeltrained = trained
         return trained
+
+    
 
     def Plot_Regression_intermodels_2D_Loaded(self,Xname,Yname):
         """
@@ -302,6 +303,8 @@ class data:
         plt.show()
         return
 
+    
+
 
     def run_analysis_2D(self):
         """
@@ -317,7 +320,7 @@ class data:
             fileselect = i
             self.Split_Dynamic_Loaded(fileselect)
             self.Remove_Gaps_Dynamic()
-            self.Train_Dynamic_models_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
+            self.Train_Dynamic_models_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1,0.01)
             self.Remove_Outliers_Dynamic()
             self.Train_Dynamic_Model_Main_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
 
@@ -329,9 +332,11 @@ class data:
             fileselect = i
             self.Split_Dynamic_Loaded(fileselect)
             self.Remove_Gaps_Dynamic()
+            print(i[:,1])
             self.Train_Dynamic_models_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
             self.Remove_Outliers_Dynamic()
             self.Train_Dynamic_Model_Main_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
+
 
         return
             
