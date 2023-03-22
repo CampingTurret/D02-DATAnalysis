@@ -135,11 +135,13 @@ class data:
         Data class for use when processing, holds methods that automate the processing
     """
     #Initialise plate
-    def __init__(self,Plate,AOA,hz):
+    def __init__(self,Plate,AOA,hz,device = "cuda" if torch.cuda.is_available() else "cpu"):
         self.Plate = Plate
         self.dynamichz  = hz
         self.dynamicAOA = AOA
+        self.device = device
         self.static = filereader(Plate,'static')
+
      
     #returns the array with the all the data from 1 dynamic case and loads it into object 
     def Get_Dynamic(self):
@@ -225,6 +227,7 @@ class data:
         models = self.Dynamicmodelsstrained
         splitdata = self.dynamicsplit
 
+        #Maindata = self.dynamicsplit[1]
         Maindata = EVDetect(models,splitdata)
 
         self.Dynamicfullload = Maindata
@@ -236,8 +239,7 @@ class data:
 
         """
         models = []
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-       
+        device = self.device
         for i in trange(len(self.dynamicsplit),desc= 'Training 1st step'):
             maindataset = self.dynamicsplit[i]
             targets = torch.tensor(maindataset[Yname].values, dtype= torch.float64).to(device)
@@ -250,13 +252,15 @@ class data:
         return models
 
     def Train_Dynamic_Model_Main_2D_Loaded(self,Xname,Yname,epoch = 2000,lr = 0.01):
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        maindataset = self.Dynamicfullload
-        targets = torch.tensor(maindataset[Yname].values, dtype= torch.float64).to(device)
-        inputdata = torch.tensor(maindataset[Xname].values,dtype= torch.float64).to(device)
-        dataset = torch.utils.data.TensorDataset(inputdata, targets)  
-        trained = Train_NN( DynamicNNstage1(len(Xname),len(Yname)).to(device), dataset , epoch, lr)
-        trained.eval()
+        device = self.device
+        for i in trange(1,desc = 'Training Main Model'):
+            maindataset = self.Dynamicfullload
+            targets = torch.tensor(maindataset[Yname].values, dtype= torch.float64).to(device)
+            inputdata = torch.tensor(maindataset[Xname].values,dtype= torch.float64).to(device)
+            dataset = torch.utils.data.TensorDataset(inputdata, targets)  
+            trained = Train_NN( DynamicNNstage1(len(Xname),len(Yname)).to(device), dataset , epoch, lr)
+            trained.eval()
+
 
         self.Dynamicmainmodeltrained = trained
         return trained
@@ -267,16 +271,18 @@ class data:
 
         A = str(self.dynamicAOA)
         F = str(self.dynamichz).replace(".","")
-
-        filename.split('_')
-        for i in filename:
-            if i == 'Free': name = 'Free.help'
-            if i == 'Locked': name = 'Locked.help'
-            if i == 'Pre': name = 'Pre.help'
-            if i == 'Rel0': name = 'Rel0.help'
-            if i == 'Rel50': name = 'Rel50.help'
-            if i == 'Rel100': name = 'Rel100.help'
+        name = ''
+        f = filename.split('_')
+        for i in f:
+            if i == 'Free': name = f'Free.help'
+            if i == 'Locked': name = f'Locked.help'
+            if i == 'Pre': name = f'Pre.help'
+            if i == 'Rel0': name = f'Rel0.help'
+            if i == 'Rel50': name = f'Rel50.help'
+            if i == 'Rel100': name = f'Rel100.help'
         Path = os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','MODELS',f'Plate {plate}',f'{ftype}',f'A{A}',f'F{F}',name))
+        os.makedirs(os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','MODELS',f'Plate {plate}',f'{ftype}',f'A{A}',f'F{F}')), exist_ok = True)
+        print(Path)
         torch.save(model,Path)
         return
 
@@ -287,7 +293,7 @@ class data:
 
         """
         models = self.Dynamicmodelsstrained
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        device = self.device
 
         fig, axs = plt.subplots(len(self.dynamicsplit),sharex=True)
         for i in range(models):
@@ -336,10 +342,10 @@ class data:
             fileselect = i
             self.Split_Dynamic_Loaded(fileselect)
             self.Remove_Gaps_Dynamic()
-            self.Train_Dynamic_models_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1,0.01)
+            self.Train_Dynamic_models_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
             self.Remove_Outliers_Dynamic()
-            self.Train_Dynamic_Model_Main_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
-
+            self.Train_Dynamic_Model_Main_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],2000,0.01)
+            self.Save_Model(self.Dynamicmainmodeltrained,self.dynamicloaded[i,1])
         
         return finalmodels, finaldatasets
 
@@ -349,10 +355,10 @@ class data:
             fileselect = i
             self.Split_Dynamic_Loaded(fileselect)
             self.Remove_Gaps_Dynamic()
-            print(i[:,1])
             self.Train_Dynamic_models_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
             self.Remove_Outliers_Dynamic()
-            self.Train_Dynamic_Model_Main_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
+            self.Train_Dynamic_Model_Main_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],2000,0.01)
+            self.Save_Model(self.Dynamicmainmodeltrained,self.dynamicloaded[i,1])
 
 
         return
