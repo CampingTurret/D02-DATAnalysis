@@ -286,6 +286,22 @@ class data:
         torch.save(model,Path)
         return
 
+    def Load_Model(self, model_type: str):
+        valid_types = ['Free', 'Locked', 'Pre', 'Rel0', 'Rel50', 'Rel100']
+        if model_type not in valid_types:
+            raise ValueError(f"Invalid model type: {model_type}. Must be one of {valid_types}")
+        plate = self.Plate
+        ftype = 'Dynamic'
+        A = str(self.dynamicAOA)
+        F = str(self.dynamichz).replace(".", "")
+        name = f'{model_type}.help'
+        path = os.path.abspath(os.path.join(os.path.dirname(__file__), '.', 'MODELS', f'Plate {plate}', f'{ftype}', f'A{A}', f'F{F}', name))
+        if not os.path.exists(path):
+            raise FileNotFoundError(f"Model file not found: {path}")
+        model = torch.load(path)
+        return model
+    
+
     def Plot_Regression_intermodels_2D_Loaded(self,Xname,Yname):
         """
 
@@ -294,25 +310,54 @@ class data:
         """
         models = self.Dynamicmodelsstrained
         device = self.device
+        if Yname == "Bending [N-mm]":
+            q = 1
+        if Yname == "Pot [degree]":
+            q = 0
+
 
         fig, axs = plt.subplots(len(self.dynamicsplit),sharex=True)
         for i in range(models):
             maindataset = self.dynamicsplit[i]
-            x =  np.linspace(0, 3 +  0.5/self.d.ynamichz , 10000)
+            x =  np.linspace(0, 3 +  0.5/self.dynamichz , 10000)
             x = torch.from_numpy(x)
             x = x.view(-1, 1).to(device)
             x = x.to(device)
             y = self.Dynamicmodelsstrained[i](x).to(device)
             x = x.detach().cpu().numpy()
-            y = y.detach().cpu().numpy()[:,1]
+            y = y.detach().cpu().numpy()[:,q]
             axs[i].plot(x,y,label = 'model')
             axs[i].plot(maindataset[Xname].values,maindataset[Yname].values[:,1])
-        plt.xlabel("Time [s]")
-        plt.ylabel("bendingmoment")
+        plt.xlabel(Xname)
+        plt.ylabel(Yname)
         plt.show()
         return
 
-    def Plot_Raw_2D_Loaded(self,Xname,Yname):
+    def Plot_Model_2D_Loaded(self,Xname,Yname,label = 'model'):
+        """
+
+        Plots the results from the models made during the intrim regression
+
+        """
+        model = self.Dynamicmainmodeltrained
+        device = self.device
+
+        if Yname == "Bending [N-mm]":
+            q = 1
+        if Yname == "Pot [degree]":
+            q = 0
+        
+        x =  np.linspace(0, 3 +  0.5/self.dynamichz , 10000)
+        x = torch.from_numpy(x)
+        x = x.view(-1, 1).to(device)
+        x = x.to(device)
+        y = model(x).to(device)
+        x = x.detach().cpu().numpy()
+        y = y.detach().cpu().numpy()[:,q]
+        plt.plot(x,y,label = label)
+        return
+
+    def Plot_Raw_2D_Loaded(self,Xname:str,Yname:str):
         """
 
         Plots the raw data, needs a dynamic case to be split
@@ -324,43 +369,66 @@ class data:
             plt.plot(maindataset[Xname].values,maindataset[Yname].values[:])
         plt.xlabel(Xname)
         plt.ylabel(Yname)
-        plt.show()
+        return
+    def run_analysis_2D_Quick(self, mode:str = 'quick', types:list = [],Xname:str = 'Time [s]',Yname:str = 'Bending [N-mm]',show:bool = True):
+        """
+
+        Runs the 2D proccessing procedure from the models.
+        This function can be configured to return the models or to do a quick version of run_analysis_2D()
+
+        2 modes: 
+        'quick' will plot all cases.
+        'limit' requires types to be an list of the wanted cases selected from: ['Free', 'Locked', 'Pre', 'Rel0', 'Rel50', 'Rel100']
+
+        show:
+        True will run plt.show() and set he labels of the axis
+        """
+
+        valid_types = ['Free', 'Locked', 'Pre', 'Rel0', 'Rel50', 'Rel100']
+        if mode == 'quick':
+            cycle_types = valid_types
+        if mode == 'limit':
+            for t in types:
+                if t not in valid_types:
+                    raise ValueError(f"Invalid model type: {types}. Must be one of {valid_types}")
+            cycle_types = types
+        for case in tqdm(cycle_types,desc='Types'):
+            self.Dynamicmainmodeltrained = self.Load_Model(case)
+            self.Plot_Model_2D_Loaded(Xname,Yname,case)
+
+        if(show):
+            plt.xlabel(Xname)
+            plt.ylabel(Yname)
+            plt.show()
+        
         return
 
+    def run_Train_2D(self):
+        """
+        Trains all models associated with the data class.
 
+        """
+        self.Get_Dynamic()
+        for i in trange(len(self.Get_Dynamic()),desc='Files completed'):
+            fileselect = i
+            self.Split_Dynamic_Loaded(fileselect)
+            self.Remove_Gaps_Dynamic()
+            self.Train_Dynamic_models_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
+            self.Remove_Outliers_Dynamic()
+            self.Train_Dynamic_Model_Main_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],2000,0.01)
+            self.Save_Model(self.Dynamicmainmodeltrained,self.dynamicloaded[i,1])
+        return
     def run_analysis_2D(self):
         """
 
         Runs the 2D proccessing procedure from scratch.
         it is fully automated
 
+        This function will only plot for this class.
+
         """
-        finalmodels = 0
-        finaldatasets = 0
-        self.Get_Dynamic()
-        for i in trange(len(self.Get_Dynamic()),desc='Files completed'):
-            fileselect = i
-            self.Split_Dynamic_Loaded(fileselect)
-            self.Remove_Gaps_Dynamic()
-            self.Train_Dynamic_models_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
-            self.Remove_Outliers_Dynamic()
-            self.Train_Dynamic_Model_Main_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],2000,0.01)
-            self.Save_Model(self.Dynamicmainmodeltrained,self.dynamicloaded[i,1])
-        
-        return finalmodels, finaldatasets
-
-    def run_Train_2D(self):
-        self.Get_Dynamic()
-        for i in trange(len(self.Get_Dynamic()),desc='Files completed'):
-            fileselect = i
-            self.Split_Dynamic_Loaded(fileselect)
-            self.Remove_Gaps_Dynamic()
-            self.Train_Dynamic_models_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
-            self.Remove_Outliers_Dynamic()
-            self.Train_Dynamic_Model_Main_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],2000,0.01)
-            self.Save_Model(self.Dynamicmainmodeltrained,self.dynamicloaded[i,1])
-
-
+        self.run_Train_2D()
+        self.run_analysis_2D_Quick()
         return
             
 
