@@ -339,9 +339,9 @@ class data:
         Plots the results from the models made during the intrim regression
 
         """
-        model = self.Dynamicmainmodeltrained
+        
         device = self.device
-
+        model = self.Dynamicmainmodeltrained.to(device)
         if Yname == "Bending [N-mm]":
             q = 1
         if Yname == "Pot [degree]":
@@ -415,7 +415,7 @@ class data:
             self.Remove_Gaps_Dynamic()
             self.Train_Dynamic_models_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
             self.Remove_Outliers_Dynamic()
-            self.Train_Dynamic_Model_Main_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],2000,0.01)
+            self.Train_Dynamic_Model_Main_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],5000,0.001)
             self.Save_Model(self.Dynamicmainmodeltrained,self.dynamicloaded[i,1])
         return
     def run_analysis_2D(self):
@@ -428,6 +428,7 @@ class data:
 
         """
         self.run_Train_2D()
+        input()
         self.run_analysis_2D_Quick()
         return
             
