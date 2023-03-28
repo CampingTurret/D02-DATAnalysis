@@ -151,6 +151,8 @@ class data:
           
         A = str(self.dynamicAOA)
         F = str(self.dynamichz).replace(".","")
+        if F == 'FBend': self.dynamichz = 3
+        if F == 'FFlap': self.dynamichz = 1.5
 
         Dynamiccase = filereader(self.Plate,'Dynamic',A,F)
         self.dynamicloaded = Dynamiccase
@@ -271,6 +273,8 @@ class data:
 
         A = str(self.dynamicAOA)
         F = str(self.dynamichz).replace(".","")
+        if F == '3': F = 'FBend'
+        if F == '15': F = 'FFend'
         name = ''
         f = filename.split('_')
         for i in f:
