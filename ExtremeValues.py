@@ -32,7 +32,7 @@ def EVDetect(Models, Data):
     q = np.empty_like(arry)
     for i in trange(len(Models),desc='Compairing'):
         for j in range(testlen):
-            if arry[j,i] < (z[j]-margin) or (z[j]+margin <  arry[j,i]):
+            if (arry[j,i] < z[j]*(1-margin)) or (z[j]*(1+margin) <  arry[j,i]):
                 q[j,i] = 1
             else:
                 q[j,i] = 0

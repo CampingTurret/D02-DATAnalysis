@@ -336,7 +336,7 @@ class data:
     def Plot_Model_2D_Loaded(self,Xname,Yname,label = 'model'):
         """
 
-        Plots the results from the models made during the intrim regression
+        Plots the results from the main model
 
         """
         
@@ -383,6 +383,9 @@ class data:
         show:
         True will run plt.show() and set he labels of the axis
         """
+        valid_modes = ['quick','limit']
+        if mode not in valid_modes:
+            raise ValueError(f"Invalid mode: {mode}. Must be one of {valid_modes}")
 
         valid_types = ['Free', 'Locked', 'Pre', 'Rel0', 'Rel50', 'Rel100']
         if mode == 'quick':
@@ -428,7 +431,6 @@ class data:
 
         """
         self.run_Train_2D()
-        input()
         self.run_analysis_2D_Quick()
         return
             
