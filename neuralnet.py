@@ -11,14 +11,14 @@ class DynamicNNstage1(nn.Module):
 
         layers = []
         layers.append(nn.Linear(xlen, 100))
-        layers.append(nn.ReLU())
+        layers.append(nn.Sigmoid())
         layers.append(nn.Linear(100, 200))
-        layers.append(nn.ReLU())
+        layers.append(nn.Sigmoid())
         for i in range(nlen):
             layers.append(nn.Linear(200, 200))
-            layers.append(nn.ReLU())
+            layers.append(nn.Sigmoid())
         layers.append(nn.Linear(200, 100))
-        layers.append(nn.ReLU())
+        layers.append(nn.Sigmoid())
         layers.append(nn.Linear(100, ylen))
         self.linear_relu_stack = nn.Sequential(*layers)
         self.linear_relu_stack.to(torch.float64)

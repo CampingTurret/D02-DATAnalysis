@@ -374,7 +374,7 @@ class data:
         """
 
         Runs the 2D proccessing procedure from the models.
-        This function can be configured to return the models or to do a quick version of run_analysis_2D()
+        This function can be configured to limited models or to do a quick version of run_analysis_2D()
 
         2 modes: 
         'quick' will plot all cases.
@@ -402,6 +402,7 @@ class data:
         if(show):
             plt.xlabel(Xname)
             plt.ylabel(Yname)
+            plt.legend()
             plt.show()
         
         return
