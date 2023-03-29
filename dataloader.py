@@ -138,6 +138,8 @@ class data:
     def __init__(self,Plate,AOA,hz,device = "cuda" if torch.cuda.is_available() else "cpu"):
         self.Plate = Plate
         self.dynamichz  = hz
+        if self.dynamichz == 'Flap': self.dynamichz =1.5
+        if self.dynamichz == 'Bend': self.dynamichz =3
         self.dynamicAOA = AOA
         self.device = device
         self.static = filereader(Plate,'static')
@@ -151,8 +153,8 @@ class data:
           
         A = str(self.dynamicAOA)
         F = str(self.dynamichz).replace(".","")
-        if F == 'FBend': self.dynamichz = 3
-        if F == 'FFlap': self.dynamichz = 1.5
+        if self.dynamichz == 3: F = 'Bend'
+        if self.dynamichz == 1.5: F = 'Flap'
 
         Dynamiccase = filereader(self.Plate,'Dynamic',A,F)
         self.dynamicloaded = Dynamiccase
@@ -273,8 +275,8 @@ class data:
 
         A = str(self.dynamicAOA)
         F = str(self.dynamichz).replace(".","")
-        if F == '3': F = 'FBend'
-        if F == '15': F = 'FFend'
+        if F == '3': F = 'Bend'
+        if F == '15': F = 'Flap'
         name = ''
         f = filename.split('_')
         for i in f:
