@@ -6,6 +6,18 @@
 <body>
     <h1>Data Plotter</h1>
     <form action="/" method="post">
+
+        <style>
+            input[type="checkbox"]:disabled {
+                display: none;
+            }
+
+                input[type="checkbox"]:disabled + label {
+                    display: none;
+                }
+        </style>
+
+
         <label for="input1">Plate:</label>
         <select id="input1" name="input1">
             <option value="A">A</option>
@@ -21,14 +33,82 @@
         </select><br><br>
         <label for="input3">Frequency:</label>
         <select id="input3" name="input3">
-            <option value= 0.5>0.5</option>
-            <option value= 5>5</option>
-            <option value= 8>8</option>
+            <option value=0.5>0.5</option>
+            <option value=5>5</option>
+            <option value=8>8</option>
             <option value="Bend">Bend</option>
             <option value="Flap">Flap</option>
         </select><br><br>
-        <input type="submit" value="Submit">
+        <label for="limit">limit</label>
+        <input type="checkbox" id="limit" name="limit" value="1" onclick="toggleCheckboxes()"><br>
+        <label for="case1">Free</label>
+        <input type="checkbox" id="case1" name="case1" value="1" disabled><br>
+        <label for="case2">Locked</label>
+        <input type="checkbox" id="case2" name="case2" value="1" disabled><br>
+        <label for="case3">Pre</label>
+        <input type="checkbox" id="case3" name="case3" value="1" disabled><br>
+        <label for="case4">Rel0</label>
+        <input type="checkbox" id="case4" name="case4" value="1" disabled><br>
+        <label for="case5">Rel50</label>
+        <input type="checkbox" id="case5" name="case5" value="1" disabled><br>
+        <label for="case6">Rel100</label>
+        <input type="checkbox" id="case6" name="case6" value="1" disabled><br>
+
+        <br><br><input type="submit" value="Submit">
+
+
+
+        <script>
+            function toggleCheckboxes() {
+                var limit = document.getElementById("limit");
+                var case1 = document.getElementById("case1");
+                var case2 = document.getElementById("case2");
+                var case3 = document.getElementById("case3");
+                var case4 = document.getElementById("case4");
+                var case5 = document.getElementById("case5");
+                var case6 = document.getElementById("case6");
+                var l1 = document.querySelector("label[for='case1']");
+                var l2 = document.querySelector("label[for='case2']");
+                var l3 = document.querySelector("label[for='case3']");
+                var l4 = document.querySelector("label[for='case4']");
+                var l5 = document.querySelector("label[for='case5']");
+                var l6 = document.querySelector("label[for='case6']");
+                if (limit.checked) {
+                    case1.disabled = false;
+                    case2.disabled = false;
+                    case3.disabled = false;
+                    case4.disabled = false;
+                    case5.disabled = false;
+                    case6.disabled = false;
+                    l1.style.display = "inline";
+                    l2.style.display = "inline";
+                    l3.style.display = "inline";
+                    l4.style.display = "inline";
+                    l5.style.display = "inline";
+                    l6.style.display = "inline";
+                } else {
+                    case1.disabled = true;
+                    case2.disabled = true;
+                    case3.disabled = true;
+                    case4.disabled = true;
+                    case5.disabled = true;
+                    case6.disabled = true;
+                    l1.style.display = "none";
+                    l2.style.display = "none";
+                    l3.style.display = "none";
+                    l4.style.display = "none";
+                    l5.style.display = "none";
+                    l6.style.display = "none";
+                }
+            }
+            window.onload = function () {
+                toggleCheckboxes();
+            }
+        </script>
     </form>
     <img src="{{ url_for('plot_png')  }}" alt="Plot">
 </body>
+
+
+
 </html>
