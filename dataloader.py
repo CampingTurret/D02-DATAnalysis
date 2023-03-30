@@ -135,9 +135,9 @@ class data:
     def __init__(self,Plate,AOA,hz,device = "cuda" if torch.cuda.is_available() else "cpu"):
         self.Plate = Plate
         self.dynamichz  = hz
-        if self.dynamichz == 'Flap': self.dynamichz =1.5
-        if self.dynamichz == 'Bend': self.dynamichz =3
-        self.dynamichz = float(self.dynamichz)
+        if isinstance(self.dynamichz, str):
+            if self.dynamichz == 'Flap': self.dynamichz =1.5
+            if self.dynamichz == 'Bend': self.dynamichz =3
         self.dynamicAOA = AOA
         self.device = device
         self.static = filereader(Plate,'static')
