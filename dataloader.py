@@ -1,10 +1,7 @@
-from datetime import time
-from pickletools import optimize
+
 import numpy as np
-from neuralnet import DynamicNNstage1, Dynamicdataset
+from neuralnet import DynamicNNstage1
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
 import matplotlib.pyplot as plt
 from tqdm.auto import tqdm,trange
 from GapDetect import GapDetect
@@ -140,6 +137,7 @@ class data:
         self.dynamichz  = hz
         if self.dynamichz == 'Flap': self.dynamichz =1.5
         if self.dynamichz == 'Bend': self.dynamichz =3
+        self.dynamichz = float(self.dynamichz)
         self.dynamicAOA = AOA
         self.device = device
         self.static = filereader(Plate,'static')
@@ -299,7 +297,8 @@ class data:
         plate = self.Plate
         ftype = 'Dynamic'
         A = str(self.dynamicAOA)
-        F = str(self.dynamichz).replace(".", "")
+        print(self.dynamichz)
+        F = str(self.dynamichz).replace(".0","").replace(".", "")
         name = f'{model_type}.help'
         path = os.path.abspath(os.path.join(os.path.dirname(__file__), '.', 'MODELS', f'Plate {plate}', f'{ftype}', f'A{A}', f'F{F}', name))
         if not os.path.exists(path):
@@ -353,7 +352,9 @@ class data:
         if Yname == "Pot [degree]":
             q = 0
         
-        x =  np.linspace(0, 3 +  0.5/self.dynamichz , 10000)
+
+        hz = float(self.dynamichz)
+        x =  np.linspace(0, 3 +  0.5/hz , 10000)
         x = torch.from_numpy(x)
         x = x.view(-1, 1).to(device)
         x = x.to(device)

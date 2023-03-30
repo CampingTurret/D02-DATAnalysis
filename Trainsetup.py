@@ -1,7 +1,5 @@
 from dataloader import data
 from multiprocessing import Pool
-import multiprocessing as mp
-import time
 import os
 
 

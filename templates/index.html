@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>D02</title>
+</head>
+<body>
+    <h1>Data Plotter</h1>
+    <form action="/" method="post">
+        <label for="input1">Plate:</label>
+        <select id="input1" name="input1">
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="B Left">B Left</option>
+            <option value="B Right">B Right</option>
+            <option value="C">C</option>
+        </select><br><br>
+        <label for="input2">Angle of Attack</label>
+        <select id="input2" name="input2">
+            <option value="0">0</option>
+            <option value="5">5</option>
+        </select><br><br>
+        <label for="input3">Frequency:</label>
+        <select id="input3" name="input3">
+            <option value= 0.5>0.5</option>
+            <option value= 5>5</option>
+            <option value= 8>8</option>
+            <option value="Bend">Bend</option>
+            <option value="Flap">Flap</option>
+        </select><br><br>
+        <input type="submit" value="Submit">
+    </form>
+    <img src="{{ url_for('plot_png')  }}" alt="Plot">
+</body>
+</html>
