@@ -91,7 +91,7 @@ if __name__ == '__main__':
         p.start()
         processes.append(p)
 
-    app.run()
+    app.run(port=3000)
 
     for p in processes:
         p.join()

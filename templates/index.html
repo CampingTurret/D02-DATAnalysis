@@ -3,17 +3,18 @@
 <head>
     <title>D02</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/Styles.css') }}">
 </head>
 <body>
     <h1>Data Plotter</h1>
-    <script type="text/javascript">
+    <script>
         function updateStatus() {
             $.ajax({
                 url: '/getqueue',
                 type: 'GET',
                 success: function (response) {
                     $('#job-status').html(response);
-                    console.log($('#job-status').html()); // Debugging statement
+                  
                 }
             });
         }
@@ -22,26 +23,6 @@
     </script>
 
     <form action="/" method="post">
-
-        <style>
-            input[type="checkbox"]:disabled {
-                display: none;
-            }
-
-                input[type="checkbox"]:disabled + label {
-                    display: none;
-                }
-        </style>
-        <style>
-            .queue {
-                position: fixed;
-                bottom: 0;
-                right: 0;
-                width: 150px;
-                border: 3px solid #000000;
-                background: #FFFFFF;
-            }
-        </style>
 
 
         <label for="input1">Plate:</label>
@@ -65,21 +46,36 @@
             <option value="Bend">Bend</option>
             <option value="Flap">Flap</option>
         </select><br>
-        <label for="limit">limit</label>
-        <input type="checkbox" id="limit" name="limit" value="1" onclick="toggleCheckboxes()"><br>
-        <label for="case1">Free</label>
-        <input type="checkbox" id="case1" name="case1" value="1" disabled><br>
-        <label for="case2">Locked</label>
-        <input type="checkbox" id="case2" name="case2" value="1" disabled><br>
-        <label for="case3">Pre</label>
-        <input type="checkbox" id="case3" name="case3" value="1" disabled><br>
-        <label for="case4">Rel0</label>
-        <input type="checkbox" id="case4" name="case4" value="1" disabled><br>
-        <label for="case5">Rel50</label>
-        <input type="checkbox" id="case5" name="case5" value="1" disabled><br>
-        <label for="case6">Rel100</label>
-        <input type="checkbox" id="case6" name="case6" value="1" disabled><br>
-
+        <div class="limitcontainer">
+            <div class="checkbox-group">
+                <label for="limit">limit</label>
+                <input type="checkbox" id="limit" name="limit" value="1" onclick="toggleCheckboxes()">
+            </div>
+            <div class="checkbox-group">
+                <label for="case1">Free</label>
+                <input type="checkbox" id="case1" name="case1" value="1" disabled>
+            </div>
+            <div class="checkbox-group">
+                <label for="case2">Locked</label>
+                <input type="checkbox" id="case2" name="case2" value="1" disabled>
+            </div>
+            <div class="checkbox-group">
+                <label for="case3">Pre</label>
+                <input type="checkbox" id="case3" name="case3" value="1" disabled>
+            </div>
+            <div class="checkbox-group">
+                <label for="case4">Rel0</label>
+                <input type="checkbox" id="case4" name="case4" value="1" disabled>
+            </div>
+            <div class="checkbox-group">
+                <label for="case5">Rel50</label>
+                <input type="checkbox" id="case5" name="case5" value="1" disabled>
+            </div>
+            <div class="checkbox-group">
+                <label for="case6">Rel100</label>
+                <input type="checkbox" id="case6" name="case6" value="1" disabled>
+            </div>
+        </div>
         <br><br><input type="submit" value="Plot" name="Plot"><input type="submit" value="Train" name="Train">
 
 
