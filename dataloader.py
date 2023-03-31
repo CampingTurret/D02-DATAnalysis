@@ -226,12 +226,12 @@ class data:
 
     def Remove_Outliers_Dynamic(self):
 
-        models = self.Dynamicmodelsstrained
+        #models = self.Dynamicmodelsstrained
         splitdata = self.dynamicsplit
 
         #Maindata = self.dynamicsplit[1]
-        Maindata = EVDetect(models,splitdata)
-
+        #Maindata = EVDetect(models,splitdata)
+        Maindata = EVDetect(splitdata)
         self.Dynamicfullload = Maindata
         return Maindata
 
@@ -297,7 +297,6 @@ class data:
         plate = self.Plate
         ftype = 'Dynamic'
         A = str(self.dynamicAOA)
-        print(self.dynamichz)
         F = str(self.dynamichz).replace(".0","").replace(".", "")
         name = f'{model_type}.help'
         path = os.path.abspath(os.path.join(os.path.dirname(__file__), '.', 'MODELS', f'Plate {plate}', f'{ftype}', f'A{A}', f'F{F}', name))
@@ -424,7 +423,7 @@ class data:
             fileselect = i
             self.Split_Dynamic_Loaded(fileselect)
             self.Remove_Gaps_Dynamic()
-            self.Train_Dynamic_models_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
+            #self.Train_Dynamic_models_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
             self.Remove_Outliers_Dynamic()
             self.Train_Dynamic_Model_Main_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],5000,0.001)
             self.Save_Model(self.Dynamicmainmodeltrained,self.dynamicloaded[i,1])

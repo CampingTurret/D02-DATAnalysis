@@ -21,8 +21,6 @@ def index():
         Plate =request.form['input1']
         AOA = request.form['input2']
         hz = request.form['input3']
-        limit = request.form.get('limit')
-        print(request.form.get('limit') != None)
         Pa = data(Plate,AOA,hz,'cpu')
         if(request.form.get('limit') != None):
            
@@ -45,7 +43,6 @@ def index():
         plt.ylabel('Bending [N-mm]')
         plt.savefig(os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','static','plot.png')))
         plt.clf()
-        plot_url = os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','static','plot.png'))
         
 
         return render_template('index.html')
