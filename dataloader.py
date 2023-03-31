@@ -137,7 +137,7 @@ class data:
         self.dynamichz  = hz
         if isinstance(self.dynamichz, str):
             if self.dynamichz == 'Flap': self.dynamichz =1.5
-            if self.dynamichz == 'Bend': self.dynamichz =3
+            elif self.dynamichz == 'Bend': self.dynamichz =3
         self.dynamicAOA = AOA
         self.device = device
         self.static = filereader(Plate,'static')
@@ -425,7 +425,7 @@ class data:
             self.Remove_Gaps_Dynamic()
             #self.Train_Dynamic_models_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
             self.Remove_Outliers_Dynamic()
-            self.Train_Dynamic_Model_Main_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],5000,0.001)
+            self.Train_Dynamic_Model_Main_2D_Loaded(["Time [s]"],["Pot [degree]","Bending [N-mm]"],6000,0.01)
             self.Save_Model(self.Dynamicmainmodeltrained,self.dynamicloaded[i,1])
         return
     def run_analysis_2D(self):

@@ -2,9 +2,25 @@
 <html>
 <head>
     <title>D02</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <h1>Data Plotter</h1>
+    <script type="text/javascript">
+        function updateStatus() {
+            $.ajax({
+                url: '/getqueue',
+                type: 'GET',
+                success: function (response) {
+                    $('#job-status').html(response);
+                    console.log($('#job-status').html()); // Debugging statement
+                }
+            });
+        }
+
+        setInterval(updateStatus, 5000);
+    </script>
+
     <form action="/" method="post">
 
         <style>
@@ -16,6 +32,16 @@
                     display: none;
                 }
         </style>
+        <style>
+            .queue {
+                position: fixed;
+                bottom: 0;
+                right: 0;
+                width: 150px;
+                border: 3px solid #000000;
+                background: #FFFFFF;
+            }
+        </style>
 
 
         <label for="input1">Plate:</label>
@@ -25,12 +51,12 @@
             <option value="B Left">B Left</option>
             <option value="B Right">B Right</option>
             <option value="C">C</option>
-        </select><br><br>
+        </select><br>
         <label for="input2">Angle of Attack</label>
         <select id="input2" name="input2">
             <option value="0">0</option>
             <option value="5">5</option>
-        </select><br><br>
+        </select><br>
         <label for="input3">Frequency:</label>
         <select id="input3" name="input3">
             <option value=0.5>0.5</option>
@@ -38,7 +64,7 @@
             <option value=8>8</option>
             <option value="Bend">Bend</option>
             <option value="Flap">Flap</option>
-        </select><br><br>
+        </select><br>
         <label for="limit">limit</label>
         <input type="checkbox" id="limit" name="limit" value="1" onclick="toggleCheckboxes()"><br>
         <label for="case1">Free</label>
@@ -54,7 +80,7 @@
         <label for="case6">Rel100</label>
         <input type="checkbox" id="case6" name="case6" value="1" disabled><br>
 
-        <br><br><input type="submit" value="Submit">
+        <br><br><input type="submit" value="Plot" name="Plot"><input type="submit" value="Train" name="Train">
 
 
 
@@ -107,6 +133,7 @@
         </script>
     </form>
     <img src="{{ url_for('plot_png')  }}" alt="Plot">
+    <div id="job-status" class="queue"></div>
 </body>
 
 
