@@ -9,12 +9,24 @@
     <h1>Data Plotter</h1>
     <script>
         function updateStatus() {
+            var jobStatus = $('#job-status');
+            var caseStatus = $('#case-status');
+            var caseStatusScrollTop = caseStatus.scrollTop();
+
             $.ajax({
                 url: '/getqueue',
                 type: 'GET',
                 success: function (response) {
-                    $('#job-status').html(response);
-                  
+                    jobStatus.html(response);
+
+                }
+            });
+            $.ajax({
+                url: '/getcases',
+                type: 'GET',
+                success: function (response) {
+                    caseStatus.html(response);
+                    caseStatus.scrollTop(caseStatusScrollTop);
                 }
             });
         }
@@ -130,6 +142,7 @@
     </form>
     <img src="{{ url_for('plot_png')  }}" alt="Plot">
     <div id="job-status" class="queue"></div>
+    <div id="case-status" class="cases"></div>
 </body>
 
 

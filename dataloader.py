@@ -298,6 +298,8 @@ class data:
         ftype = 'Dynamic'
         A = str(self.dynamicAOA)
         F = str(self.dynamichz).replace(".0","").replace(".", "")
+        if F == '3': F = 'Bend'
+        if F == '15': F = 'Flap'
         name = f'{model_type}.help'
         path = os.path.abspath(os.path.join(os.path.dirname(__file__), '.', 'MODELS', f'Plate {plate}', f'{ftype}', f'A{A}', f'F{F}', name))
         if not os.path.exists(path):

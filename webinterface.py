@@ -5,6 +5,7 @@ from multiprocessing import Process, Queue, Value
 import matplotlib.pyplot as plt
 import matplotlib
 import os
+import numpy as np
 from dataloader import data
 matplotlib.use('Agg')
 app = Flask(__name__)
@@ -23,6 +24,28 @@ def get_queue():
     Freeworkers = workers - active_workers.value
     # Render the queue.html template and pass the items to it
     return render_template('queue.html', queue_length=queue_length, Active_length = active_workers.value, Free_length = Freeworkers)
+
+@app.route('/getcases')
+def get_itemlist():
+    validfiles = ['Free.help', 'Locked.help', 'Pre.help', 'Rel0.help', 'Rel50.help', 'Rel100.help']
+    AOA = ['0','5']
+    F = ['05','5','8','Bend','Flap']
+    Plate = ['A','B','B Left','B Right','C']
+    q = {}
+    for p in Plate:
+        for a in AOA:
+            for f in F:
+                case = f'Plate {p} A{a} F{f}'
+                exists = 0
+                for v in validfiles:
+                    Path = os.path.abspath(os.path.join(os.path.dirname(__file__), '.', 'MODELS', f'Plate {p}', f'Dynamic', f'A{a}', f'F{f}', f'{v}'))
+                    if os.path.exists(Path):
+                        exists +=1
+                if exists==0: q[case] = 'red'
+                elif exists<6: q[case] = 'orange'
+                elif exists==6:  q[case] = 'green'
+    return render_template('cases.html', data=q)               
+                    
 
 
 @app.route('/plot.png')

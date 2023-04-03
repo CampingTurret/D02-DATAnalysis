@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cases</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/Styles.css') }}">
+</head>
+
+<body>
+    <h1 class="txt">Cases</h1>
+    <ul class="scrollable-list-cases">
+        {% for case, color in data.items() %}
+        <li class ="txt" style="color: {{color}}">{{case}}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
