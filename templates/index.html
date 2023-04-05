@@ -27,11 +27,12 @@
                 success: function (response) {
                     caseStatus.html(response);
                     caseStatus.scrollTop(caseStatusScrollTop);
+                    
                 }
             });
         }
 
-        setInterval(updateStatus, 5000);
+        setInterval(updateStatus, 10000);
     </script>
 
     <form action="/" method="post">

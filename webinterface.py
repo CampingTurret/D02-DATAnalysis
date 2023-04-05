@@ -5,7 +5,6 @@ from multiprocessing import Process, Queue, Value
 import matplotlib.pyplot as plt
 import matplotlib
 import os
-import numpy as np
 from dataloader import data
 matplotlib.use('Agg')
 app = Flask(__name__)
@@ -103,7 +102,7 @@ def index():
             plt.legend()
             plt.xlabel('Time [s]')
             plt.ylabel('Bending [N-mm]')
-            plt.savefig(os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','static','plot.png')))
+            plt.savefig(os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','static','plot.svg')))
             plt.clf()
         
         if(request.form.get('Train') != None):

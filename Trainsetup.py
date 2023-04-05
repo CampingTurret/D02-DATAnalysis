@@ -14,7 +14,7 @@ def trainfunction(l:list):
 
 if __name__ == '__main__':
     #Change the DATA's !!!
-    P = [['B Right',5,0.5,'cuda']]
+    P = [['B Right',5,'Flap','cuda']]
     
 
     p = Pool(processes=(os.cpu_count() -2))
