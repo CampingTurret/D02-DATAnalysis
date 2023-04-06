@@ -47,9 +47,9 @@ def get_itemlist():
                     
 
 
-@app.route('/plot.png')
-def plot_png():
-    return send_from_directory('static', 'plot.png')
+@app.route('/plot.svg')
+def plot_svg():
+    return send_from_directory('static', 'plot.svg')
 
 
 def trainfunction(q: Queue, active_workers: Value):
