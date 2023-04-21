@@ -5,4 +5,4 @@ Data analysis project using the data from Xavier Carrillo Córcoles, DOI of the 
 
 Rename the files folder to DATA.
 Place the DATA folder in this directory and it should work from there. (folder is 2gb)
-Alternatively you can use the models generated. in this case run webinterface.py and navigate to http://127.0.0.1:3000/ in your browser. 
+Alternatively you can use the pregenerated models. in this case run webinterface.py and navigate to http://127.0.0.1:3000/ in your browser. 

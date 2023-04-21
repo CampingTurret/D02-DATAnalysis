@@ -1,6 +1,6 @@
 
 import numpy as np
-from neuralnet import DynamicNNstage1
+from neuralnet import DynamicNNstage1 , DynamicNNstage2
 import torch
 import matplotlib.pyplot as plt
 from tqdm.auto import tqdm,trange
@@ -447,9 +447,75 @@ class data:
     
         
 
-    
+class thirddimdata:
+    """
+        Data class for use when processing, holds methods that automate the processing.
+        This is for the generation of 3D plots
+    """
+    #Initialise plate
+    def __init__(self,Plate,AOA,device = "cuda" if torch.cuda.is_available() else "cpu"):
+        self.Plate = Plate
+        self.dynamicAOA = AOA
+        self.device = device
+        self.Foptions = ['05','5','8','Bend','Flap']
+        
+    def Get_Data(self):
 
-      
+        Q = []
+        for F in self.Foptions:
+
+            files = filereader(self.Plate,'Dynamic',self.dynamicAOA,F)
+            
+            if F == '05': hz = 0.5
+            if F == '5': hz = 5
+            if F == '8': hz = 8
+            if F == 'Flap': hz = 1.5
+            if F == 'Bend': hz = 3
+
+            print(F)
+            print(hz)
+            for i in range(len(files)):
+                b = [hz]*files[i,:].shape[0]
+                splitdata = Separateruns(files[i,:],hz)
+                for p in range(len(splitdata)):
+                    b = [hz]*splitdata[p].shape[0]
+                    splitdata[p]['Frequency'] = b
+                    Q.append(splitdata[p])
+        self.data = pd.concat(Q)
+        print(self.data)
+        return self.data
+
+    def Train(self,Xname,Yname,epoch = 10000,lr = 0.01):
+        device = self.device
+        for i in trange(1,desc = 'Training Main Model'):
+            maindataset = self.data
+            targets = torch.tensor(maindataset[Yname].values, dtype= torch.float64).to(device)
+            inputdata = torch.tensor(maindataset[Xname].values,dtype= torch.float64).to(device)
+            dataset = torch.utils.data.TensorDataset(inputdata, targets)  
+            trained = Train_NN( DynamicNNstage2(len(Xname),len(Yname),3).to(device), dataset , epoch, lr)
+            trained.eval()
+
+
+        self.model = trained
+        return self.model 
+
+    def Save_Model(self):
+        name = f'{self.dynamicAOA}.help3D'
+        Path = os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','MODELS3D',f'Plate {self.plate}',name))
+        os.makedirs(os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','MODELS3D',f'Plate {self.plate}')), exist_ok = True)
+        print(Path)
+        torch.save(self.model,Path)
+        return
+
+    def Generate_Plot(self):
+
+        return
+
+    def Run_Train(self):
+        self.Get_Data()
+        self.Train(["Time [s]","Frequency"],["Pot [degree]","Bending [N-mm]"],10000,0.01)
+        self.Save_Model()
+        return
 
     
 
