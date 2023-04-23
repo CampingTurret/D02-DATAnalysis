@@ -505,11 +505,19 @@ class thirddimdata:
         os.makedirs(os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','MODELS3D',f'Plate {self.plate}')), exist_ok = True)
         print(Path)
         torch.save(self.model,Path)
-        return
+        return self.model
 
     def Generate_Plot(self):
+        name = f'{self.dynamicAOA}.help3D'
+        Path = os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','MODELS3D',f'Plate {self.plate}',name))
+        if not os.path.exists(Path):
+            raise FileNotFoundError(f"Model file not found: {Path}")
+        self.model = torch.load(Path)       
 
-        return
+
+
+
+        return 
 
     def Run_Train(self):
         self.Get_Data()
