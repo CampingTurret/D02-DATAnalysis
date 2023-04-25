@@ -1,6 +1,7 @@
 
 import numpy as np
 from neuralnet import DynamicNNstage1 , DynamicNNstage2
+from Testmodel import TestModel
 import torch
 import matplotlib.pyplot as plt
 from tqdm.auto import tqdm,trange
@@ -8,6 +9,7 @@ from GapDetect import GapDetect
 from ExtremeValues import EVDetect
 import os
 import pandas as pd
+import plotly.graph_objects as go
 #reads the files
 
 def filereader(plate, ftype, Angle = None, Frequency = None):
@@ -459,13 +461,12 @@ class thirddimdata:
         self.device = device
         self.Foptions = ['05','5','8','Bend','Flap']
         
-    def Get_Data(self):
+    def Get_Data(self,case):
 
         Q = []
         for F in self.Foptions:
 
             files = filereader(self.Plate,'Dynamic',self.dynamicAOA,F)
-            
             if F == '05': hz = 0.5
             if F == '5': hz = 5
             if F == '8': hz = 8
@@ -475,12 +476,13 @@ class thirddimdata:
             print(F)
             print(hz)
             for i in range(len(files)):
-                b = [hz]*files[i,:].shape[0]
-                splitdata = Separateruns(files[i,:],hz)
-                for p in range(len(splitdata)):
-                    b = [hz]*splitdata[p].shape[0]
-                    splitdata[p]['Frequency'] = b
-                    Q.append(splitdata[p])
+                if case in files[i,1]:
+                    b = [hz]*files[i,:].shape[0]
+                    splitdata = Separateruns(files[i,:],hz)
+                    for p in range(len(splitdata)):
+                        b = [hz]*splitdata[p].shape[0]
+                        splitdata[p]['Frequency'] = b
+                        Q.append(splitdata[p])
         self.data = pd.concat(Q)
         print(self.data)
         return self.data
@@ -499,30 +501,83 @@ class thirddimdata:
         self.model = trained
         return self.model 
 
-    def Save_Model(self):
-        name = f'{self.dynamicAOA}.help3D'
-        Path = os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','MODELS3D',f'Plate {self.plate}',name))
-        os.makedirs(os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','MODELS3D',f'Plate {self.plate}')), exist_ok = True)
+    def Save_Model(self,Case):
+        name = f'{self.dynamicAOA}_{Case}.help3D'
+        Path = os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','MODELS3D',f'Plate {self.Plate}',name))
+        os.makedirs(os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','MODELS3D',f'Plate {self.Plate}')), exist_ok = True)
         print(Path)
         torch.save(self.model,Path)
         return self.model
 
-    def Generate_Plot(self):
-        name = f'{self.dynamicAOA}.help3D'
-        Path = os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','MODELS3D',f'Plate {self.plate}',name))
+    def Generate_Plot(self,Case):
+        name = f'{self.dynamicAOA}_{Case}.help3D'
+        #name = f'{self.dynamicAOA}.help3D'
+        Path = os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','MODELS3D',f'Plate {self.Plate}',name))
+        #Path = os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','MODELS3D',f'test_model.pt'))
         if not os.path.exists(Path):
             raise FileNotFoundError(f"Model file not found: {Path}")
-        self.model = torch.load(Path)       
+        self.model = torch.load(Path)     
+        
+        tv = torch.arange(0, 2, 0.01, dtype= torch.float64 )  #time
+        fv = torch.arange(0.5,8, 0.1,dtype= torch.float64)  #frequency
+        tg, fg = torch.meshgrid(tv, fv)
 
+        inputdata = torch.stack((tg, fg), dim=-1)
+        self.model.eval()
 
+        with torch.no_grad():
+            inputdata.to('cpu')
+            self.model.to('cpu')
+            print(self.model)
+            print(inputdata)
+            outputdata = self.model(inputdata)[:,:,1]
+            outputdata = outputdata.transpose(0,1)
+         
+        fig = go.Figure(data=[go.Surface(z=outputdata, x=tv, y=fv)])
+        fig.update_layout(scene=dict(xaxis_title='Time', yaxis_title='Frequency', zaxis_title='Bending [N-mm]'))
+        fig.update_layout(scene=dict(xaxis=dict(range=[0, 4])))
+        
 
+        print(tv)
+        print(fv)
+        print(outputdata.shape)
+        print(self.model(inputdata)[:,:,1])
 
+        fig.write_html('static/plot.html')
+        fig.show()
+
+        import matplotlib.pyplot as plt
+        from mpl_toolkits.mplot3d import Axes3D
+
+        tv = torch.arange(0, 4, 0.1, dtype=torch.float64)  # time
+        fv = torch.arange(0.5, 8, 0.5, dtype=torch.float64)  # frequency
+        tg, fg = torch.meshgrid(tv, fv)
+        inputdata = torch.stack((tg, fg), dim=-1)
+
+        # Assuming outputdata is a 2D tensor with shape [75, 400]
+        outputdata = self.model(inputdata)[:,:,1]
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        ax.plot_surface(tg.detach(), fg.detach(), outputdata.detach())
+        ax.set_xlabel('Time')
+        ax.set_ylabel('Frequency')
+        ax.set_zlabel('Bending [N-mm]')
+        plt.show()
         return 
 
     def Run_Train(self):
-        self.Get_Data()
-        self.Train(["Time [s]","Frequency"],["Pot [degree]","Bending [N-mm]"],10000,0.01)
-        self.Save_Model()
+        for C in ['Free', 'Locked', 'Pre', 'Rel0', 'Rel50', 'Rel100']:
+            self.Get_Data(C)
+            self.Train(["Time [s]","Frequency"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
+            self.Save_Model(C)
+        return
+
+    def Run_Train_Solo(self,case):
+        C = case
+        self.Get_Data(C)
+        self.Train(["Time [s]","Frequency"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
+        self.Save_Model(C)
         return
 
     
