@@ -101,7 +101,7 @@ def index():
             # Generate image using Matplotlib
             plt.legend()
             plt.xlabel('Time [s]')
-            plt.ylabel('Bending [N-mm]')
+            plt.ylabel('Bending moment coefficient [-]')
             plt.savefig(os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','static','plot.svg')))
             plt.clf()
         

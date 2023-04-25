@@ -363,7 +363,7 @@ class data:
         x = x.to(device)
         y = model(x).to(device)
         x = x.detach().cpu().numpy()
-        y = y.detach().cpu().numpy()[:,q]
+        y = y.detach().cpu().numpy()[:,q] / 2996.350
         plt.plot(x,y,label = label)
         return
 
@@ -580,6 +580,8 @@ class thirddimdata:
         fig.write_html('static/plot.html')
         fig.show()
 
+
+        ## Same plot but with matplot lib
         import matplotlib.pyplot as plt
         from mpl_toolkits.mplot3d import Axes3D
 
