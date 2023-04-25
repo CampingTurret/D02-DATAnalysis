@@ -483,6 +483,40 @@ class thirddimdata:
                         b = [hz]*splitdata[p].shape[0]
                         splitdata[p]['Frequency'] = b
                         Q.append(splitdata[p])
+
+
+        filesstatic = filereader(self.Plate,'Static')
+        for i in range(len(filesstatic)):
+
+            if 'Speed_10' in filesstatic[i,1]:
+                if case in filesstatic[i,1]:
+
+                    if case in ['Locked', 'Pre', 'Rel0', 'Rel50', 'Rel100']: case1 = 'Locked'
+                    else: case1 = 'Free'
+
+                    if self.dynamicAOA < 0.1:
+                        if 'Alpha_0' in filesstatic[i,1] and case1 in filesstatic[i,1]:
+                            A1 = filesstatic[i,0][filesstatic[i,0]['Time [s]'] > 0]
+                            A1 = A1[A1['Time [s]'] < 0.05]
+                            for hz in np.arange(0,8,0.1):
+                                b = [hz]*A1.shape[0]
+                                A1['Frequency'] = b
+                                Q.append(A1)
+                    
+
+                    if case in ['Free', 'Pre', 'Rel0', 'Rel50', 'Rel100']: case2 = 'Free'
+                    else: case2 = 'Locked'
+
+                    if self.dynamicAOA > 0.1:
+                        if 'Alpha_6' in filesstatic[i,1]:
+                            if case2 in filesstatic[i,1]:
+                                A1 = filesstatic[i,0][filesstatic[i,0]['Time [s]'] > 3]
+                                A1 = A1[A1['Time [s]'] < 4]
+                                for hz in np.arange(0,8,0.1):
+                                    b = [hz]*A1.shape[0]
+                                    A1['Frequency'] = b
+                                    Q.append(A1)
+                    
         self.data = pd.concat(Q)
         print(self.data)
         return self.data
@@ -518,7 +552,7 @@ class thirddimdata:
             raise FileNotFoundError(f"Model file not found: {Path}")
         self.model = torch.load(Path)     
         
-        tv = torch.arange(0, 2, 0.01, dtype= torch.float64 )  #time
+        tv = torch.arange(0, 4, 0.01, dtype= torch.float64 )  #time
         fv = torch.arange(0.5,8, 0.1,dtype= torch.float64)  #frequency
         tg, fg = torch.meshgrid(tv, fv)
 
@@ -576,7 +610,7 @@ class thirddimdata:
     def Run_Train_Solo(self,case):
         C = case
         self.Get_Data(C)
-        self.Train(["Time [s]","Frequency"],["Pot [degree]","Bending [N-mm]"],1000,0.01)
+        self.Train(["Time [s]","Frequency"],["Pot [degree]","Bending [N-mm]"],200,0.01)
         self.Save_Model(C)
         return
 
