@@ -466,6 +466,7 @@ class thirddimdata:
         Q = []
         for F in self.Foptions:
 
+            #The code below is hardcoded for a few frequencies as input it should be possible to control it here
             files = filereader(self.Plate,'Dynamic',self.dynamicAOA,F)
             if F == '05': hz = 0.5
             if F == '5': hz = 5
@@ -490,7 +491,8 @@ class thirddimdata:
 
             if 'Speed_10' in filesstatic[i,1]:
                 if case in filesstatic[i,1]:
-
+                    
+                    ## the code below is hardcoded for A = 5 and A = 0  (even then the A = 5 uses A=6 static)
                     if case in ['Locked', 'Pre', 'Rel0', 'Rel50', 'Rel100']: case1 = 'Locked'
                     else: case1 = 'Free'
 
@@ -544,6 +546,9 @@ class thirddimdata:
         return self.model
 
     def Generate_Plot(self,Case):
+
+
+        ## Getting the correct model
         name = f'{self.dynamicAOA}_{Case}.help3D'
         #name = f'{self.dynamicAOA}.help3D'
         Path = os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','MODELS3D',f'Plate {self.Plate}',name))
@@ -552,13 +557,16 @@ class thirddimdata:
             raise FileNotFoundError(f"Model file not found: {Path}")
         self.model = torch.load(Path)     
         
+
+        ## make a grid for the time and frequency
         tv = torch.arange(0, 4, 0.01, dtype= torch.float64 )  #time
         fv = torch.arange(0.5,8, 0.1,dtype= torch.float64)  #frequency
         tg, fg = torch.meshgrid(tv, fv)
-
         inputdata = torch.stack((tg, fg), dim=-1)
+
         self.model.eval()
 
+        ## Get data from model andput the axis correct
         with torch.no_grad():
             inputdata.to('cpu')
             self.model.to('cpu')
@@ -567,16 +575,18 @@ class thirddimdata:
             outputdata = self.model(inputdata)[:,:,1]
             outputdata = outputdata.transpose(0,1)
          
+        ##Plot using plotly
         fig = go.Figure(data=[go.Surface(z=outputdata, x=tv, y=fv)])
         fig.update_layout(scene=dict(xaxis_title='Time', yaxis_title='Frequency', zaxis_title='Bending [N-mm]'))
         fig.update_layout(scene=dict(xaxis=dict(range=[0, 4])))
         
-
+        ##sanity check in console
         print(tv)
         print(fv)
         print(outputdata.shape)
         print(self.model(inputdata)[:,:,1])
 
+        ##Output 
         fig.write_html('static/plot.html')
         fig.show()
 
@@ -595,7 +605,7 @@ class thirddimdata:
 
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
-        ax.plot_surface(tg.detach(), fg.detach(), outputdata.detach())
+        ax.plot_surface(tg.detach(), fg.detach(), outputdata.detach()) # For some unknown reason matplotlib does not like pytorch tensors
         ax.set_xlabel('Time')
         ax.set_ylabel('Frequency')
         ax.set_zlabel('Bending [N-mm]')
