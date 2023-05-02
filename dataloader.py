@@ -367,7 +367,7 @@ class data:
         plt.plot(x,y,label = label)
         return
 
-    def Plot_Raw_2D_Loaded(self,Xname:str,Yname:str):
+    def Plot_Raw_2D_Loaded(self,Xname:str = 'Time [s]',Yname:str ='Bending [N-mm]'):
         """
 
         Plots the raw data, needs a dynamic case to be split
@@ -380,6 +380,17 @@ class data:
         plt.xlabel(Xname)
         plt.ylabel(Yname)
         return
+
+    def Plot_Raw_2D_All(self,cases):
+        arr = self.Get_Dynamic()
+        for i in trange(len(arr),desc='Files completed'):
+            fileselect = i
+            if cases in arr[i,1]:
+                self.Split_Dynamic_Loaded(fileselect)
+                self.Remove_Gaps_Dynamic()
+                self.Remove_Outliers_Dynamic()
+                self.Plot_Raw_2D_Loaded()
+
     def run_analysis_2D_Quick(self, mode:str = 'quick', types:list = [],Xname:str = 'Time [s]',Yname:str = 'Bending [N-mm]',show:bool = True):
         """
 

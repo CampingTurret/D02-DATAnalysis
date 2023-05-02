@@ -93,9 +93,11 @@ def index():
                 if (request.form.get('case5') != None): selected.append('Rel50')
                 if (request.form.get('case6') != None): selected.append('Rel100')
 
+                if(request.form.get('Raw') != None):Pa.Plot_Raw_2D_All(selected)
                 Pa.run_analysis_2D_Quick('limit',show=False,types = selected)
 
             if(request.form.get('limit') == None ):
+                if(request.form.get('Raw') != None):Pa.Plot_Raw_2D_All(['Free', 'Locked', 'Pre', 'Rel0', 'Rel50', 'Rel100'])
                 Pa.run_analysis_2D_Quick('quick',show=False)
 
             # Generate image using Matplotlib
