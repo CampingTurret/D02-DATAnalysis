@@ -116,7 +116,7 @@ def index():
 
 if __name__ == '__main__':
     processes = []
-    for _ in range(1):
+    for _ in range(int(os.cpu_count()/4)+1):
         p = Process(target=trainfunction, args=(q, active_workers))
         p.start()
         processes.append(p)
