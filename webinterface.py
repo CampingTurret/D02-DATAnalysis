@@ -73,14 +73,14 @@ def index():
         Plate =request.form['input1']
         AOA = request.form['input2']
         prehz = request.form['input3']
-        
+        device = request.form['Device']
+
         if prehz == '0.5': hz = 0.5
         if prehz == '5': hz = 5
         if prehz == '8': hz = 8
         if prehz == 'Flap': hz = 'Flap'
         if prehz == 'Bend': hz = 'Bend'
-        
-        Pa = data(Plate,AOA,hz,'cpu')
+        Pa = data(Plate,AOA,hz,device)
         if(request.form.get('Plot') != None):
             if(request.form.get('limit') != None):
            
@@ -95,11 +95,18 @@ def index():
 
                 if(request.form.get('Raw') != None):Pa.Plot_Raw_2D_All(selected)
                 r2 = Pa.R2_Score(selected)
+                r2l = []
+                for i in range(len(selected)):
+                    r2l.append(selected[i] + ' : ' + str(r2[i]))
                 Pa.run_analysis_2D_Quick('limit',show=False,types = selected)
 
             if(request.form.get('limit') == None ):
                 if(request.form.get('Raw') != None):Pa.Plot_Raw_2D_All(['Free', 'Locked', 'Pre', 'Rel0', 'Rel50', 'Rel100'])
                 r2 = Pa.R2_Score(['Free', 'Locked', 'Pre', 'Rel0', 'Rel50', 'Rel100'])
+                r2l = []
+                for i in range(len(['Free', 'Locked', 'Pre', 'Rel0', 'Rel50', 'Rel100'])):
+                    r2l.append(['Free', 'Locked', 'Pre', 'Rel0', 'Rel50', 'Rel100'][i] + ' : ' + str(r2[i]))
+       
                 Pa.run_analysis_2D_Quick('quick',show=False)
 
             # Generate image using Matplotlib
@@ -108,11 +115,15 @@ def index():
             plt.ylabel('Bending moment coefficient [-]')
             plt.savefig(os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','static','plot.svg')))
             plt.clf()
+            r2lc = ''
+            for i in r2l:
+                r2lc = r2lc + '| ' + i + ' |'
+            return render_template('index.html', r2 = r2lc)
         
         if(request.form.get('Train') != None):
             q.put(Pa)
 
-        return render_template('index.html', r2 = r2)
+        return render_template('index.html')
     else:
         return render_template('index.html')
 
@@ -123,7 +134,7 @@ if __name__ == '__main__':
         p.start()
         processes.append(p)
 
-    app.run(port=2000)
+    app.run(port=3000)
 
     for p in processes:
         p.join()

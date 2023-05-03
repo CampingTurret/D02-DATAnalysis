@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from tqdm.auto import tqdm,trange
 from GapDetect import GapDetect
 from ExtremeValues import EVDetect
-import sklearn
+import sklearn.metrics
 import os
 import pandas as pd
 import plotly.graph_objects as go
@@ -378,7 +378,7 @@ class data:
        
         for i in range(len(self.dynamicsplit)):
             maindataset = self.dynamicsplit[i]
-            plt.plot(maindataset[Xname].values,maindataset[Yname].values[:])
+            plt.plot(maindataset[Xname].values,maindataset[Yname].values[:]/ 2996.350)
         plt.xlabel(Xname)
         plt.ylabel(Yname)
         return
@@ -395,15 +395,17 @@ class data:
         for case in cases:
             for i in trange(len(arr),desc='Files completed'):
                 fileselect = i
-                if case in arr[i,1]:
+                if case+'_' in arr[i,1]:
                     self.Split_Dynamic_Loaded(fileselect)
                     self.Remove_Gaps_Dynamic()
                     self.Remove_Outliers_Dynamic()
                     y = self.Dynamicfullload
-                    model = self.Load_Model(case)
-                    x = torch.from_numpy( y["Time [s]"]).device(self.device)
-                    ypred = model(x).detach().numpy()
-                    r2 = r2.append(sklearn.metrics.r2_score(y["Bending [N-mm]"],ypred))
+                    model = self.Load_Model(case).to(device = self.device)
+                    x = torch.tensor( y["Time [s]"].values,dtype = torch.float64).to(device = self.device)
+                    x = x.reshape((x.size(0),1))
+                    print(x)
+                    ypred = model(x).detach().cpu().numpy()
+                    r2.append(sklearn.metrics.r2_score(y["Bending [N-mm]"],ypred[:,1]))
                 
         return r2
 
@@ -412,7 +414,7 @@ class data:
         for i in trange(len(arr),desc='Files completed'):
             fileselect = i
             for case in cases:
-                if case in arr[i,1]:
+                if case+'_' in arr[i,1]:
                     self.Split_Dynamic_Loaded(fileselect)
                     self.Remove_Gaps_Dynamic()
                     self.Remove_Outliers_Dynamic()
