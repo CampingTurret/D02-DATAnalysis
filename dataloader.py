@@ -1,4 +1,5 @@
 
+from re import L
 import numpy as np
 from neuralnet import DynamicNNstage1 , DynamicNNstage2
 from Testmodel import TestModel
@@ -7,6 +8,7 @@ import matplotlib.pyplot as plt
 from tqdm.auto import tqdm,trange
 from GapDetect import GapDetect
 from ExtremeValues import EVDetect
+import sklearn
 import os
 import pandas as pd
 import plotly.graph_objects as go
@@ -381,15 +383,40 @@ class data:
         plt.ylabel(Yname)
         return
 
+    def R2_Score(self,cases):
+
+        """
+        input: cases
+
+        out: array of r2 values
+        """
+        arr = self.Get_Dynamic()
+        r2 = []
+        for case in cases:
+            for i in trange(len(arr),desc='Files completed'):
+                fileselect = i
+                if case in arr[i,1]:
+                    self.Split_Dynamic_Loaded(fileselect)
+                    self.Remove_Gaps_Dynamic()
+                    self.Remove_Outliers_Dynamic()
+                    y = self.Dynamicfullload
+                    model = self.Load_Model(case)
+                    x = torch.from_numpy( y["Time [s]"]).device(self.device)
+                    ypred = model(x).detach().numpy()
+                    r2 = r2.append(sklearn.metrics.r2_score(y["Bending [N-mm]"],ypred))
+                
+        return r2
+
     def Plot_Raw_2D_All(self,cases):
         arr = self.Get_Dynamic()
         for i in trange(len(arr),desc='Files completed'):
             fileselect = i
-            if cases in arr[i,1]:
-                self.Split_Dynamic_Loaded(fileselect)
-                self.Remove_Gaps_Dynamic()
-                self.Remove_Outliers_Dynamic()
-                self.Plot_Raw_2D_Loaded()
+            for case in cases:
+                if case in arr[i,1]:
+                    self.Split_Dynamic_Loaded(fileselect)
+                    self.Remove_Gaps_Dynamic()
+                    self.Remove_Outliers_Dynamic()
+                    self.Plot_Raw_2D_Loaded()
 
     def run_analysis_2D_Quick(self, mode:str = 'quick', types:list = [],Xname:str = 'Time [s]',Yname:str = 'Bending [N-mm]',show:bool = True):
         """

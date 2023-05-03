@@ -27,7 +27,7 @@
                 success: function (response) {
                     caseStatus.html(response);
                     caseStatus.scrollTop(caseStatusScrollTop);
-                    
+
                 }
             });
         }
@@ -146,6 +146,7 @@
         </script>
     </form>
     <img src="{{ url_for('plot_svg')  }}" alt="Plot">
+    <div>{{ r2 }}</div>
     <div id="job-status" class="queue"></div>
     <div id="case-status" class="cases"></div>
 </body>

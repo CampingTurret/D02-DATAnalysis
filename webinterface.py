@@ -94,10 +94,12 @@ def index():
                 if (request.form.get('case6') != None): selected.append('Rel100')
 
                 if(request.form.get('Raw') != None):Pa.Plot_Raw_2D_All(selected)
+                r2 = Pa.R2_Score(selected)
                 Pa.run_analysis_2D_Quick('limit',show=False,types = selected)
 
             if(request.form.get('limit') == None ):
                 if(request.form.get('Raw') != None):Pa.Plot_Raw_2D_All(['Free', 'Locked', 'Pre', 'Rel0', 'Rel50', 'Rel100'])
+                r2 = Pa.R2_Score(['Free', 'Locked', 'Pre', 'Rel0', 'Rel50', 'Rel100'])
                 Pa.run_analysis_2D_Quick('quick',show=False)
 
             # Generate image using Matplotlib
@@ -110,7 +112,7 @@ def index():
         if(request.form.get('Train') != None):
             q.put(Pa)
 
-        return render_template('index.html')
+        return render_template('index.html', r2 = r2)
     else:
         return render_template('index.html')
 
@@ -121,7 +123,7 @@ if __name__ == '__main__':
         p.start()
         processes.append(p)
 
-    app.run(port=3000)
+    app.run(port=2000)
 
     for p in processes:
         p.join()
