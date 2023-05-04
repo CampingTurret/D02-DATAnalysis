@@ -5,12 +5,61 @@ from multiprocessing import Process, Queue, Value
 import matplotlib.pyplot as plt
 import matplotlib
 import os
-from dataloader import data
+from dataloader import data, PlotMaxValue
 matplotlib.use('Agg')
 app = Flask(__name__)
 
 active_workers = Value('i', 0)
 q = Queue()
+
+
+@app.route('/Max', methods=['GET', 'POST'])
+def Max_Plot():
+    if request.method == 'POST':
+        # Get user input from form
+        Plate =request.form['input1']
+        AOA = request.form['input2']
+        if(request.form.get('Plot') != None):
+            if(request.form.get('limit') != None):
+           
+                selected = []
+                #get user input from form
+                if (request.form.get('case1') != None): selected.append('Free') 
+                if (request.form.get('case2') != None): selected.append('Locked')
+                if (request.form.get('case3') != None): selected.append('Pre')
+                if (request.form.get('case4') != None): selected.append('Rel0')
+                if (request.form.get('case5') != None): selected.append('Rel50')
+                if (request.form.get('case6') != None): selected.append('Rel100')
+
+            else: selected = ['Free','Locked','Pre','Rel0','Rel50','Rel100']
+            listvaluearr = []
+            for C in selected:
+                valuearr = []
+                for F in  [0.5,'Flap','Bend',5,8]:
+
+                    P = data(Plate,AOA,F)
+                    P.Dynamicmainmodeltrained = P.Load_Model(C)
+                    value = P.Get_Maximum_Value()
+                    valuearr.append([value,P.dynamichz])
+                listvaluearr.append(valuearr)
+
+
+            PlotMaxValue(selected, listvaluearr)
+
+            # Generate image using Matplotlib
+            plt.legend()
+            plt.xlabel('Frequency [hz]')
+            plt.ylabel('Maximum bending moment coefficient [-]')
+            plt.savefig(os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','static','Maxplot.svg')))
+            plt.clf()
+
+        return render_template('Max.html')
+    else:
+        return render_template('Max.html')
+
+@app.route('/Maxplot.svg')
+def Maxplot_svg():
+    return send_from_directory('static', 'Maxplot.svg')
 
 @app.route('/getqueue')
 def get_queue():
@@ -46,7 +95,6 @@ def get_itemlist():
     return render_template('cases.html', data=q)               
                     
 
-
 @app.route('/plot.svg')
 def plot_svg():
     return send_from_directory('static', 'plot.svg')
@@ -66,7 +114,7 @@ def trainfunction(q: Queue, active_workers: Value):
             active_workers.value -= 1
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/main', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
         # Get user input from form

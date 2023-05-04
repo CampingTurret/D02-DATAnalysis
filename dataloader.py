@@ -1,4 +1,5 @@
 
+from ast import Raise
 from re import L
 import numpy as np
 from neuralnet import DynamicNNstage1 , DynamicNNstage2
@@ -13,6 +14,27 @@ import os
 import pandas as pd
 import plotly.graph_objects as go
 #reads the files
+
+def PlotMaxValue(cases,casearrays):
+
+    if len(cases) != len(casearrays):
+
+        raise ValueError("No curve for each case!, fix plz")
+
+    for i in range(len(cases)):
+        vararray = casearrays[i]
+        case = cases[i]
+        x = []
+        y = []
+        for k in range(len(vararray)):
+            x.append(vararray[k][1])
+            y.append(vararray[k][0])
+
+        plt.plot(x,y,label = case)
+        plt.scatter(x,y,label = case)
+    
+    return
+
 
 def filereader(plate, ftype, Angle = None, Frequency = None):
    
@@ -369,6 +391,26 @@ class data:
         plt.plot(x,y,label = label)
         return
 
+    def Get_Maximum_Value(self,Xname:str = 'Time [s]',Yname:str ='Bending [N-mm]'):
+        if Yname == "Bending [N-mm]":
+            q = 1
+        if Yname == "Pot [degree]":
+            q = 0
+        device = self.device
+        model = self.Dynamicmainmodeltrained.to(device)
+        hz = float(self.dynamichz)
+        x =  np.linspace(0, 3 +  0.5/hz , 10000)
+        x = torch.from_numpy(x)
+        x = x.view(-1, 1).to(device)
+        x = x.to(device)
+        y = model(x).to(device)
+        x = x.detach().cpu().numpy()
+        y = y.detach().cpu().numpy()[:,q] / 2996.350
+
+        maxvalue = np.amax(y)
+        return maxvalue
+
+
     def Plot_Raw_2D_Loaded(self,Xname:str = 'Time [s]',Yname:str ='Bending [N-mm]'):
         """
 
@@ -484,6 +526,8 @@ class data:
         self.run_Train_2D()
         self.run_analysis_2D_Quick()
         return
+
+
             
 
     
@@ -651,6 +695,7 @@ class thirddimdata:
         ax.set_zlabel('Bending [N-mm]')
         plt.show()
         return 
+
 
     def Run_Train(self):
         for C in ['Free', 'Locked', 'Pre', 'Rel0', 'Rel50', 'Rel100']:
