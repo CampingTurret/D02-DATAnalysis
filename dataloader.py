@@ -20,8 +20,8 @@ def PlotMaxValue(cases,casearrays):
     if len(cases) != len(casearrays):
 
         raise ValueError("No curve for each case!, fix plz")
-
-    for i in range(len(cases)):
+    colors = ["#FF00F3","#0800FF","#04FF00","#F0FF00","#FF0000","#00FFDC"]
+    for i in trange(len(cases)):
         vararray = casearrays[i]
         case = cases[i]
         x = []
@@ -30,8 +30,8 @@ def PlotMaxValue(cases,casearrays):
             x.append(vararray[k][1])
             y.append(vararray[k][0])
 
-        plt.plot(x,y,label = case)
-        plt.scatter(x,y,label = case)
+        plt.plot(x,y,label = case, c=colors[i])
+        plt.scatter(x,y, c=colors[i])
     
     return
 
