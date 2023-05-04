@@ -20,7 +20,7 @@ def PlotMaxValue(cases,casearrays):
     if len(cases) != len(casearrays):
 
         raise ValueError("No curve for each case!, fix plz")
-    colors = ["#FF00F3","#0800FF","#04FF00","#F0FF00","#FF0000","#00FFDC"]
+    colors = ["#B5F8FF","#EAB5FF","#FFB5F1","#B8FFB5","#B5BDFF","#FFB5B5"]
     for i in trange(len(cases)):
         vararray = casearrays[i]
         case = cases[i]
