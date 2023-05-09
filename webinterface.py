@@ -16,6 +16,7 @@ q = Queue()
 @app.route('/Max', methods=['GET', 'POST'])
 def Max_Plot():
     if request.method == 'POST':
+        print('Max request recieved')
         # Get user input from form
         Plate =request.form['input1']
         AOA = request.form['input2']
@@ -43,7 +44,8 @@ def Max_Plot():
                     valuearr.append([value,P.dynamichz])
                 listvaluearr.append(valuearr)
 
-
+            print(listvaluearr)
+            print(selected)
             PlotMaxValue(selected, listvaluearr)
 
             # Generate image using Matplotlib
@@ -117,6 +119,7 @@ def trainfunction(q: Queue, active_workers: Value):
 @app.route('/main', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
+        print('main request recieved')
         # Get user input from form
         Plate =request.form['input1']
         AOA = request.form['input2']
@@ -169,7 +172,9 @@ def index():
             return render_template('index.html', r2 = r2lc)
         
         if(request.form.get('Train') != None):
-            q.put(Pa)
+            a = 1
+            print(str(request.environ['REMOTE_ADDR']) + 'very funny :(')
+            #q.put(Pa)
 
         return render_template('index.html')
     else:
@@ -182,7 +187,7 @@ if __name__ == '__main__':
         p.start()
         processes.append(p)
 
-    app.run(port=3000)
+    app.run('0.0.0.0',port=3000)
 
     for p in processes:
         p.join()
