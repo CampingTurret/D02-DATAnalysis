@@ -52,6 +52,7 @@ def Max_Plot():
             plt.legend()
             plt.xlabel('Frequency [hz]')
             plt.ylabel('Maximum bending moment coefficient [-]')
+            plt.grid(True)
             plt.savefig(os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','static','Maxplot.svg')))
             plt.clf()
 
@@ -163,8 +164,10 @@ def index():
             # Generate image using Matplotlib
             plt.legend()
             plt.xlabel('Time [s]')
-            plt.ylabel('Bending moment coefficient [-]')
+            plt.ylabel('Bending moment coefficient[-]')
+            plt.grid(True)
             plt.savefig(os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','static','plot.svg')))
+            plt.savefig(os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','static',f'P{Plate}A{AOA}F{prehz.replace(".","")}.svg')))
             plt.clf()
             r2lc = ''
             for i in r2l:
@@ -172,9 +175,8 @@ def index():
             return render_template('index.html', r2 = r2lc)
         
         if(request.form.get('Train') != None):
-            a = 1
-            print(str(request.environ['REMOTE_ADDR']) + 'very funny :(')
-            #q.put(Pa)
+            print(str(request.environ['REMOTE_ADDR']) + ':'+f'Training: {Plate}{AOA}{prehz}')
+            q.put(Pa)
 
         return render_template('index.html')
     else:
