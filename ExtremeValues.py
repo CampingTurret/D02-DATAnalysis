@@ -22,8 +22,14 @@ def EVDetect(Data):
         indexlist.append(indexes)
         indexlistlen.append(len(indexes))
         
-    
-    amountofpeaks = min(indexlistlen)
+    try:  
+        amountofpeaks = min(indexlistlen)
+    except:
+        return pd.concat(Data)
+
+
+
+        amountofpeaks = 0
     remove = np.zeros((len(Data),amountofpeaks))
 
     for q in range(amountofpeaks):
