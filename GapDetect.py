@@ -21,5 +21,11 @@ def GapDetect(DirtyData: list):
             removed = removed - 1
     #print("\n",removed, "samples removed due to gaps")
     #print(CleanData)
+
+    if len(CleanData) == 0:
+        for i in range(len(DirtyData)):
+            if len(DirtyData[i]) > (avglength - 200):
+                CleanData.append(DirtyData[i])
+                removed = removed - 1
     return CleanData
 
