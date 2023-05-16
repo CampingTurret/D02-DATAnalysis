@@ -164,7 +164,7 @@ def index():
             # Generate image using Matplotlib
             plt.legend()
             plt.xlabel('Time [s]')
-            plt.ylabel('Bending moment coefficient[-]')
+            plt.ylabel('Bending moment coefficient [-]')
             plt.grid(True)
             plt.savefig(os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','static','plot.svg')))
             plt.savefig(os.path.abspath(os.path.join(os.path.dirname( __file__ ),'.','static',f'P{Plate}A{AOA}F{prehz.replace(".","")}.svg')))
