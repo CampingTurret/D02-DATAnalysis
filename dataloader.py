@@ -420,7 +420,7 @@ class data:
        
         for i in range(len(self.dynamicsplit)):
             maindataset = self.dynamicsplit[i]
-            plt.plot(maindataset[Xname].values,maindataset[Yname].values[:]/ 2996.350  )
+            plt.plot(maindataset[Xname].values,maindataset[Yname].values[:] / 2996.350  )
         plt.xlabel(Xname)
         plt.ylabel(Yname)
         return

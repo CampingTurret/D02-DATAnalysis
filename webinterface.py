@@ -5,6 +5,7 @@ from multiprocessing import Process, Queue, Value
 import matplotlib.pyplot as plt
 import matplotlib
 import os
+import numpy as np
 from dataloader import data, PlotMaxValue
 matplotlib.use('Agg')
 app = Flask(__name__)
